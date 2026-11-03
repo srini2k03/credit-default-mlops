@@ -91,8 +91,11 @@ jobs:
           bash scripts/smoke_api.sh http://localhost:8000
       - name: Short Locust run (not committed; the recorded load test runs in train.yml)
         run: |
-          pip install "locust>=2.29"
-          locust -f locust/locustfile.py --headless -u 10 -r 5 -t 20s --host http://localhost:8000 \
+          # Isolated venv: mixing the runner's system site-packages with a --user
+          # install breaks gevent's zope.event namespace import.
+          python3 -m venv /tmp/locust-venv
+          /tmp/locust-venv/bin/pip install -q "locust>=2.29"
+          /tmp/locust-venv/bin/locust -f locust/locustfile.py --headless -u 10 -r 5 -t 20s --host http://localhost:8000 \
             --csv /tmp/locust --only-summary
           python locust/summarize.py /tmp/locust_stats.csv --users 10 --duration 20s \
             --where "CI smoke, synthetic smoke model" >> "$GITHUB_STEP_SUMMARY"
