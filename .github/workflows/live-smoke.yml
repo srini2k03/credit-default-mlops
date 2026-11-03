@@ -1,0 +1,38 @@
+name: live-smoke
+
+# Smoke-tests the deployed API (Render free tier). The first request after idle
+# wakes the service, which can take a minute, so /health is polled first.
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: "Deployed API base URL"
+        type: string
+        default: "https://credit-default-api.onrender.com"
+  schedule:
+    - cron: "17 6 * * 1"  # weekly
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      BASE: ${{ inputs.base_url || 'https://credit-default-api.onrender.com' }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Wake the service
+        run: |
+          for i in $(seq 1 30); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' -m 30 "$BASE/health" || true)
+            echo "attempt $i: HTTP $code"
+            [ "$code" = "200" ] && exit 0
+            sleep 10
+          done
+          echo "::error::$BASE/health did not return 200"; exit 1
+      - name: Smoke test
+        run: bash scripts/smoke_api.sh "$BASE"
+      - name: Model metadata
+        run: curl -fsS "$BASE/model" | tee -a "$GITHUB_STEP_SUMMARY"
