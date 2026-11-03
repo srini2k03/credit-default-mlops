@@ -1,0 +1,64 @@
+# Local stack: MLflow tracking/registry, the API, and a static report server.
+#   docker compose up -d --build                         # mlflow :5000, api :8000, reports :8080
+#   docker compose --profile train run --rm trainer      # train + gate + promote into this MLflow
+# The API asks MLflow for models:/credit-default@production and falls back to the bundled model.
+services:
+  mlflow:
+    build:
+      context: .
+      dockerfile: docker/mlflow.Dockerfile
+    ports: ["5000:5000"]
+    volumes:
+      - mlflow-data:/mlflow
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      target: api
+    environment:
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+      MODEL_SOURCE: auto
+      MODEL_URI: models:/credit-default@production
+      PREDICTION_LOG_PATH: /app/logs/predictions.sqlite
+    ports: ["8000:8000"]
+    volumes:
+      - prediction-logs:/app/logs
+    depends_on:
+      mlflow:
+        condition: service_healthy
+
+  reports:
+    image: nginx:1.27-alpine
+    ports: ["8080:80"]
+    volumes:
+      - ./docker/nginx/index.html:/usr/share/nginx/html/index.html:ro
+      - ./reports:/usr/share/nginx/html/reports:ro
+      - ./results:/usr/share/nginx/html/results:ro
+    command: ["sh", "-c", "sed -i 's/location \\/ {/location \\/ { autoindex on;/' /etc/nginx/conf.d/default.conf && exec nginx -g 'daemon off;'"]
+
+  trainer:
+    profiles: ["train"]
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      target: train
+    environment:
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+    volumes:
+      - ./data:/app/data
+      - ./artifacts:/app/artifacts
+    # Real data by default; add "data=synthetic train=fast" for an offline smoke run.
+    command: ["sh", "-c", "python -m credit_default.data.download && python flows/training_flow.py"]
+    depends_on:
+      mlflow:
+        condition: service_healthy
+
+volumes:
+  mlflow-data:
+  prediction-logs:
