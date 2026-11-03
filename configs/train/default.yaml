@@ -9,6 +9,7 @@ splits:                          # stratified, seeded; fractions of all rows
   calibration: 0.10              # isotonic calibration only
   validation: 0.10               # threshold choice and model selection
   test: 0.20                     # untouched holdout; used by the quality gate
+n_jobs: 2                        # explicit threads per model; -1 oversubscribes with mixed OpenMP runtimes
 cv_folds: 3
 n_trials: 30
 timeout_s: 900                   # per model family
