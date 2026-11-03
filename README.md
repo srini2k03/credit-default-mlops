@@ -20,7 +20,7 @@ retraining; and CI/CD to GHCR, Render and GitHub Pages.
 
 | What | Where |
 |---|---|
-| API (Swagger UI) | `https://credit-default-api.onrender.com/docs` (live after you click **Deploy to Render**; Render may add a suffix to the name if it is taken) |
+| API (Swagger UI) | https://credit-default-api-fkqg.onrender.com/docs (health: https://credit-default-api-fkqg.onrender.com/health; checked weekly by the `live-smoke` workflow) |
 | Monitoring and results site | https://srini2k03.github.io/credit-default-mlops/ (Evidently drift reports, metrics, gate, load test, MLflow summary and screenshots) |
 | Container image | `ghcr.io/srini2k03/credit-default-mlops:latest` (pushed by `ci.yml` on every push to `main`) |
 
