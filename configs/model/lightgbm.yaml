@@ -1,0 +1,17 @@
+family: lightgbm
+params:
+  n_estimators: 300
+  learning_rate: 0.05
+  num_leaves: 31
+  min_child_samples: 40
+  subsample: 0.8
+  subsample_freq: 1
+  colsample_bytree: 0.8
+  reg_lambda: 1.0
+search_space:
+  n_estimators: {type: int, low: 100, high: 600}
+  learning_rate: {type: float, low: 0.01, high: 0.2, log: true}
+  num_leaves: {type: int, low: 8, high: 64}
+  min_child_samples: {type: int, low: 10, high: 200, log: true}
+  colsample_bytree: {type: float, low: 0.5, high: 1.0}
+  reg_lambda: {type: float, low: 0.001, high: 10.0, log: true}

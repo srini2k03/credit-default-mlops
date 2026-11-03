@@ -1,0 +1,9 @@
+tracking_uri: ${oc.env:MLFLOW_TRACKING_URI,sqlite:///mlruns/mlflow.db}
+artifact_location: mlruns/artifacts
+experiment: credit-default
+model_name: credit-default
+staging_alias: staging
+production_alias: production
+gate:
+  pr_auc_tolerance: 0.005      # challenger may be at most this much lower (absolute)
+  cost_tolerance: 0.01         # challenger cost may be at most 1% higher (relative)

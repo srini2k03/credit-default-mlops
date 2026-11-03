@@ -1,0 +1,7 @@
+# Misclassification costs in relative units (1 unit = margin lost on one wrongly declined good customer).
+# FN = approving a customer who then defaults: expected loss ~ exposure x LGD.
+# FP = declining a customer who would have repaid: lost interest/fee margin.
+# 5:1 is a conservative reading of typical card economics; see README "Business framing".
+fn_cost: 5.0
+fp_cost: 1.0
+threshold_grid: 199          # thresholds evaluated in (0, 1)

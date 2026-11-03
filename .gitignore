@@ -1,0 +1,29 @@
+# environments
+.venv/
+__pycache__/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+# data (versioned with DVC, never committed)
+/data/synthetic/
+/data/processed/
+/data/slices/
+*.xls
+*.zip
+
+# experiment tracking and run outputs
+mlruns/
+mlartifacts/
+mlflow.db
+outputs/
+multirun/
+artifacts/
+reports/
+logs/
+site/
+.dvcstore/
+
+# local caches
+.prefect/
+.locust/

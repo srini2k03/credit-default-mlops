@@ -1,0 +1,6 @@
+# Deterministic synthetic fixture with the exact UCI schema. For tests and smoke runs only:
+# metrics computed on it are meaningless and are never published.
+source: synthetic
+raw_path: data/synthetic/credit_default.csv
+n_rows: 6000
+seed: 7

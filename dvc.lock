@@ -1,0 +1,18 @@
+schema: '2.0'
+stages:
+  download:
+    cmd: python -m credit_default.data.download data=uci
+    deps:
+    - path: configs/data/uci.yaml
+      hash: md5
+      md5: 7d96bbac7296368614a94af3810e9015
+      size: 1493
+    - path: src/credit_default/data/download.py
+      hash: md5
+      md5: 5da96b0589292f78dec1c2d229561ee6
+      size: 6004
+    outs:
+    - path: data/raw/credit_default.csv
+      hash: md5
+      md5: 33a5b76bb4495c406c42f09775b5480b
+      size: 2867208
