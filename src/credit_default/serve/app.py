@@ -6,15 +6,18 @@ import logging
 import os
 import uuid
 from contextlib import asynccontextmanager
+from typing import Annotated
 
 import pandas as pd
-from fastapi import FastAPI, HTTPException, Query, Request
-from fastapi.responses import JSONResponse
+from fastapi import Body, FastAPI, HTTPException, Query, Request
+from fastapi.responses import JSONResponse, RedirectResponse
 
 from credit_default import __version__
 from credit_default.serve.model_loader import REPO_ROOT, LoadedModel, load_model
 from credit_default.serve.prediction_log import PredictionLogger
 from credit_default.serve.schemas import (
+    OPENAPI_BATCH_EXAMPLES,
+    OPENAPI_EXAMPLES,
     BatchRequest,
     BatchResponse,
     Contribution,
@@ -44,7 +47,13 @@ app = FastAPI(
     description=(
         "Calibrated probability of credit-card default next month, a cost-optimal approve/decline "
         "decision, and per-request SHAP explanations. Model: `models:/credit-default@production` "
-        "from the MLflow registry, or the bundled CI-trained artifact when no registry is reachable."
+        "from the MLflow registry, or the bundled CI-trained artifact when no registry is reachable.\n\n"
+        "**Try it:** open `POST /predict`, click **Try it out**, pick an example applicant from the "
+        "*Examples* dropdown (or edit the JSON body), then click **Execute**. The response appears "
+        "under *Responses* below the button.\n\n"
+        "**Hosted demo note:** the free hosting tier sleeps when idle, so the first request after a "
+        "pause can take 30-60 s while the service wakes up. Later requests return in well under a "
+        "second."
     ),
     lifespan=lifespan,
 )
@@ -101,7 +110,7 @@ def _predict(request: Request, apps: list[CreditApplication], endpoint: str) -> 
 
 @app.get("/", include_in_schema=False)
 def root():
-    return {"service": "credit-default-mlops", "docs": "/docs", "health": "/health"}
+    return RedirectResponse(url="/docs")
 
 
 @app.get("/health", response_model=Health)
@@ -134,18 +143,28 @@ def model_info(request: Request):
 
 
 @app.post("/predict", response_model=Prediction)
-def predict(application: CreditApplication, request: Request):
+def predict(
+    application: Annotated[CreditApplication, Body(openapi_examples=OPENAPI_EXAMPLES)],
+    request: Request,
+):
     return _predict(request, [application], "predict")[0]
 
 
 @app.post("/predict_batch", response_model=BatchResponse)
-def predict_batch(batch: BatchRequest, request: Request):
+def predict_batch(
+    batch: Annotated[BatchRequest, Body(openapi_examples=OPENAPI_BATCH_EXAMPLES)],
+    request: Request,
+):
     preds = _predict(request, batch.applications, "predict_batch")
     return BatchResponse(n=len(preds), predictions=preds)
 
 
 @app.post("/explain", response_model=Explanation)
-def explain(application: CreditApplication, request: Request, top_k: int = Query(5, ge=1, le=31)):
+def explain(
+    application: Annotated[CreditApplication, Body(openapi_examples=OPENAPI_EXAMPLES)],
+    request: Request,
+    top_k: int = Query(5, ge=1, le=31, description="Number of top SHAP contributions to return"),
+):
     m = _model(request)
     result = m.bundle.explain(_frame([application]), top_k=top_k)[0]
     return Explanation(
