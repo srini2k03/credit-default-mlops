@@ -1,0 +1,425 @@
+<!doctype html><html lang='en'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'><title>credit-default-mlops</title><style>
+:root { --bg:#ffffff; --fg:#1f2937; --muted:#6b7280; --line:#e5e7eb; --accent:#2563eb; --card:#f9fafb; }
+@media (prefers-color-scheme: dark) { :root { --bg:#0f172a; --fg:#e5e7eb; --muted:#9ca3af; --line:#334155;
+  --accent:#60a5fa; --card:#111827; } }
+* { box-sizing: border-box; }
+body { margin:0; background:var(--bg); color:var(--fg); font:16px/1.6 system-ui,-apple-system,sans-serif; }
+main { max-width: 980px; margin: 0 auto; padding: 24px 16px 64px; }
+a { color: var(--accent); }
+h1 { margin: 0 0 4px; } .sub { color: var(--muted); margin: 0 0 24px; }
+section { border-top: 1px solid var(--line); padding-top: 16px; margin-top: 24px; }
+table { border-collapse: collapse; display: block; overflow-x: auto; max-width: 100%; font-size: 14px; }
+th, td { border: 1px solid var(--line); padding: 4px 8px; text-align: left; white-space: nowrap; }
+img { max-width: 100%; height: auto; border: 1px solid var(--line); border-radius: 6px; background: #fff; }
+.note { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; }
+ul.links li { margin: 4px 0; }
+</style></head><body><main><h1>credit-default-mlops</h1>
+<p class='sub'>Monitoring and results site, built 2026-11-03 15:30 UTC. <a href='https://github.com/srini2k03/credit-default-mlops'>Source on GitHub</a>.</p>
+<section><h2>Model results (real UCI data)</h2>
+<h1>Training run report</h1>
+<ul>
+<li>Data: <code>uci</code> (30000 rows, default rate 0.221, sha256 <code>af6aa9d50511...</code>)</li>
+<li>Generated: 2026-11-03T13:40:05Z from commit <code>d2d766943e</code></li>
+<li>Splits: train 18000 / calibration 3000 / validation 3000 / test 6000</li>
+<li>Costs: FN = 5.0, FP = 1.0 (Bayes threshold for calibrated scores = 0.167)</li>
+<li>Imbalance handling: <code>class_weight</code>; champion: <strong>lightgbm</strong></li>
+</ul>
+<h2>Test holdout, all families (threshold = each model's cost-optimal threshold from validation)</h2>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>CV PR-AUC (train)</th>
+<th>ROC-AUC</th>
+<th>PR-AUC</th>
+<th>F1</th>
+<th>Brier</th>
+<th>Cost / applicant</th>
+<th>Threshold</th>
+<th>Recall</th>
+<th>Approval rate</th>
+<th>Brier before calibration</th>
+<th>Optuna trials</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>logreg</td>
+<td>0.5133</td>
+<td>0.7403</td>
+<td>0.4782</td>
+<td>0.4714</td>
+<td>0.1431</td>
+<td>0.6012</td>
+<td>0.1300</td>
+<td>0.7295</td>
+<td>0.5367</td>
+<td>0.1938</td>
+<td>30</td>
+</tr>
+<tr>
+<td>lightgbm</td>
+<td>0.5640</td>
+<td>0.7781</td>
+<td>0.5362</td>
+<td>0.4879</td>
+<td>0.1353</td>
+<td>0.5625</td>
+<td>0.1300</td>
+<td>0.7664</td>
+<td>0.5263</td>
+<td>0.1763</td>
+<td>30</td>
+</tr>
+<tr>
+<td>xgboost</td>
+<td>0.5683</td>
+<td>0.7799</td>
+<td>0.5351</td>
+<td>0.4897</td>
+<td>0.1358</td>
+<td>0.5682</td>
+<td>0.1700</td>
+<td>0.7468</td>
+<td>0.5467</td>
+<td>0.1814</td>
+<td>30</td>
+</tr>
+</tbody>
+</table>
+<h2>Threshold rules for the champion (test holdout)</h2>
+<table>
+<thead>
+<tr>
+<th>Rule</th>
+<th>ROC-AUC</th>
+<th>PR-AUC</th>
+<th>F1</th>
+<th>Brier</th>
+<th>Cost / applicant</th>
+<th>Threshold</th>
+<th>Recall</th>
+<th>Approval rate</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>cost-optimal</td>
+<td>0.7781</td>
+<td>0.5362</td>
+<td>0.4879</td>
+<td>0.1353</td>
+<td>0.5625</td>
+<td>0.1300</td>
+<td>0.7664</td>
+<td>0.5263</td>
+</tr>
+<tr>
+<td>0.5</td>
+<td>0.7781</td>
+<td>0.5362</td>
+<td>0.4582</td>
+<td>0.1353</td>
+<td>0.7593</td>
+<td>0.5000</td>
+<td>0.3466</td>
+<td>0.8865</td>
+</tr>
+<tr>
+<td>max-F1</td>
+<td>0.7781</td>
+<td>0.5362</td>
+<td>0.5394</td>
+<td>0.1353</td>
+<td>0.6192</td>
+<td>0.3868</td>
+<td>0.5237</td>
+<td>0.7917</td>
+</tr>
+</tbody>
+</table>
+<h2>Imbalance ablation (CV PR-AUC on the training split, same hyper-parameters)</h2>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Strategy</th>
+<th>CV PR-AUC</th>
+<th>Std</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>logreg</td>
+<td>none</td>
+<td>0.5149</td>
+<td>0.0125</td>
+</tr>
+<tr>
+<td>logreg</td>
+<td>class_weight</td>
+<td>0.5133</td>
+<td>0.0115</td>
+</tr>
+<tr>
+<td>logreg</td>
+<td>smote</td>
+<td>0.5141</td>
+<td>0.0121</td>
+</tr>
+<tr>
+<td>lightgbm</td>
+<td>none</td>
+<td>0.5637</td>
+<td>0.0070</td>
+</tr>
+<tr>
+<td>lightgbm</td>
+<td>class_weight</td>
+<td>0.5640</td>
+<td>0.0077</td>
+</tr>
+<tr>
+<td>lightgbm</td>
+<td>smote</td>
+<td>0.5602</td>
+<td>0.0040</td>
+</tr>
+<tr>
+<td>xgboost</td>
+<td>none</td>
+<td>0.5690</td>
+<td>0.0088</td>
+</tr>
+<tr>
+<td>xgboost</td>
+<td>class_weight</td>
+<td>0.5683</td>
+<td>0.0087</td>
+</tr>
+<tr>
+<td>xgboost</td>
+<td>smote</td>
+<td>0.5532</td>
+<td>0.0042</td>
+</tr>
+</tbody>
+</table>
+<h2>Figures</h2>
+<p><img alt="cost curve" src="results/figures/cost_curve.png" /></p>
+<p><img alt="calibration" src="results/figures/calibration.png" /></p>
+<p><img alt="SHAP summary" src="results/figures/shap_bar.png" /></p>
+<p><img alt="SHAP beeswarm" src="results/figures/shap_beeswarm.png" /></p>
+</section>
+<section><h2>Quality gate</h2><h1>Quality gate</h1>
+<p><strong>Decision: PASS</strong></p>
+<ul>
+<li>no production model: challenger accepted as the first version</li>
+</ul>
+<p>Challenger: models:/credit-default@staging (v1)<br />
+Production: none</p>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Challenger</th>
+<th>Production</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>pr_auc</td>
+<td>0.5362</td>
+<td>-</td>
+</tr>
+<tr>
+<td>roc_auc</td>
+<td>0.7781</td>
+<td>-</td>
+</tr>
+<tr>
+<td>business_cost</td>
+<td>0.5625</td>
+<td>-</td>
+</tr>
+<tr>
+<td>brier</td>
+<td>0.1353</td>
+<td>-</td>
+</tr>
+<tr>
+<td>f1</td>
+<td>0.4879</td>
+<td>-</td>
+</tr>
+<tr>
+<td>threshold</td>
+<td>0.1300</td>
+<td>-</td>
+</tr>
+</tbody>
+</table></section>
+<section><h2>Load test</h2><h1>Load test</h1>
+<ul>
+<li>Generated: 2026-11-03 13:42 UTC, commit <code>d2d766943e</code>, <a href="https://github.com/srini2k03/credit-default-mlops/actions/runs/41645854230">workflow run</a></li>
+<li>Setup: Locust headless, 20 users, 60s; GitHub Actions ubuntu-latest runner, API in Docker on the same host</li>
+<li>Latencies in milliseconds, measured client-side</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Endpoint</th>
+<th>Requests</th>
+<th>Failures</th>
+<th>RPS</th>
+<th>p50</th>
+<th>p95</th>
+<th>p99</th>
+<th>Max</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>POST /explain</code></td>
+<td>727</td>
+<td>0</td>
+<td>12.3</td>
+<td>70</td>
+<td>130</td>
+<td>160</td>
+<td>217</td>
+</tr>
+<tr>
+<td><code>GET /health</code></td>
+<td>358</td>
+<td>0</td>
+<td>6.1</td>
+<td>22</td>
+<td>87</td>
+<td>110</td>
+<td>136</td>
+</tr>
+<tr>
+<td><code>POST /predict</code></td>
+<td>3757</td>
+<td>0</td>
+<td>63.6</td>
+<td>88</td>
+<td>170</td>
+<td>190</td>
+<td>290</td>
+</tr>
+<tr>
+<td><code>POST /predict_batch (20)</code></td>
+<td>701</td>
+<td>0</td>
+<td>11.9</td>
+<td>100</td>
+<td>180</td>
+<td>190</td>
+<td>285</td>
+</tr>
+<tr>
+<td><strong>All</strong></td>
+<td>5543</td>
+<td>0</td>
+<td>93.9</td>
+<td>80</td>
+<td>170</td>
+<td>190</td>
+<td>290</td>
+</tr>
+</tbody>
+</table></section>
+<section><h2>MLflow run summary</h2><h1>MLflow run summary</h1>
+<p>Experiment <code>credit-default</code>, exported after the training run.</p>
+<table>
+<thead>
+<tr>
+<th>runName</th>
+<th>status</th>
+<th>start_time</th>
+<th>test_pr_auc</th>
+<th>test_roc_auc</th>
+<th>test_business_cost</th>
+<th>test_brier</th>
+<th>cv_pr_auc</th>
+<th>champion</th>
+<th>data_source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>xgboost</td>
+<td>FINISHED</td>
+<td>2026-11-03 13:39:18.829000+00:00</td>
+<td>0.5351</td>
+<td>0.7799</td>
+<td>0.5682</td>
+<td>0.1358</td>
+<td>0.5683</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>lightgbm</td>
+<td>FINISHED</td>
+<td>2026-11-03 13:38:37.428000+00:00</td>
+<td>0.5362</td>
+<td>0.7781</td>
+<td>0.5625</td>
+<td>0.1353</td>
+<td>0.5640</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>logreg</td>
+<td>FINISHED</td>
+<td>2026-11-03 13:38:29.192000+00:00</td>
+<td>0.4782</td>
+<td>0.7403</td>
+<td>0.6012</td>
+<td>0.1431</td>
+<td>0.5133</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>train-uci-2026-11-03T13:38:29Z</td>
+<td>FINISHED</td>
+<td>2026-11-03 13:38:29.163000+00:00</td>
+<td>0.5362</td>
+<td>0.7781</td>
+<td>0.5625</td>
+<td>0.1353</td>
+<td></td>
+<td>lightgbm</td>
+<td>uci</td>
+</tr>
+</tbody>
+</table>
+<h2>Registered versions</h2>
+<table>
+<thead>
+<tr>
+<th>Version</th>
+<th>Aliases</th>
+<th>Run</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>production, staging</td>
+<td><code>b8bfce8214cc4d2bbc9cc79fe1f74d0b</code></td>
+</tr>
+</tbody>
+</table></section>
+<section><h2>MLflow UI screenshots</h2>
+<p><img src='screenshots/mlflow-runs.png' alt='mlflow-runs'></p>
+</section>
+<section><h2>Drift monitoring (Evidently)</h2>
+<p>The data has no timestamps, so production traffic is simulated from the test split: a <i>control</i> slice left untouched and a <i>drifted</i> slice with documented shifts (credit limits x0.7, ages -6 years, PAY_0 one month worse for 35% of rows, balances x1.25). Reference = training split.</p>
+<ul class='links'><li><a href='reports/drift_control.html'>control slice</a> - 0/24 columns drifted (share 0.00, threshold 0.30): <b>no drift</b></li><li><a href='reports/drift_drifted.html'>drifted slice</a> - 10/24 columns drifted (share 0.42, threshold 0.30): <b>drift</b></li></ul>
+</section></main></body></html>
