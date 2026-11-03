@@ -8,7 +8,7 @@ on:
       base_url:
         description: "Deployed API base URL"
         type: string
-        default: "https://credit-default-api.onrender.com"
+        default: "https://credit-default-api-fkqg.onrender.com"
   schedule:
     - cron: "17 6 * * 1"  # weekly
 
@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
-      BASE: ${{ inputs.base_url || 'https://credit-default-api.onrender.com' }}
+      BASE: ${{ inputs.base_url || 'https://credit-default-api-fkqg.onrender.com' }}
     steps:
       - uses: actions/checkout@v4
       - name: Wake the service
