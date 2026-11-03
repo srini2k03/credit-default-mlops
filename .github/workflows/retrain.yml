@@ -1,0 +1,82 @@
+name: retrain
+
+# Drift check -> retrain when the drift share exceeds the threshold (configs/monitor).
+# There is no live traffic with labels, so the checked data is a simulated slice:
+#   schedule: the control slice (expected outcome: no drift, no retrain)
+#   dispatch: choose the slice; "drifted" demonstrates the retrain path end to end.
+on:
+  schedule:
+    - cron: "17 5 * * 1"   # Mondays 05:17 UTC
+  workflow_dispatch:
+    inputs:
+      slice:
+        description: Slice to check
+        type: choice
+        options: [drifted, control]
+        default: drifted
+
+permissions:
+  contents: read
+
+env:
+  MLFLOW_DISABLE_TELEMETRY: "true"
+  MLFLOW_DISABLE_AGENT_HINT: "1"
+  DO_NOT_TRACK: "1"
+
+jobs:
+  check-drift:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    outputs:
+      drift: ${{ steps.drift.outputs.drift }}
+      drift_share: ${{ steps.drift.outputs.drift_share }}
+      slice: ${{ steps.drift.outputs.slice }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+      - run: pip install -e ".[train,monitor]"
+      - uses: actions/cache@v4
+        with:
+          path: .dvcstore
+          key: dvcstore-${{ hashFiles('dvc.lock') }}
+          restore-keys: dvcstore-
+      - run: make data
+      - id: drift
+        name: check_drift (exit 1 = drift, 2 = error)
+        run: |
+          SLICE="${{ inputs.slice || 'control' }}"
+          echo "slice=$SLICE" >> "$GITHUB_OUTPUT"
+          set +e
+          python -m credit_default.monitor.check_drift --slice="$SLICE"
+          rc=$?
+          set -e
+          if [ "$rc" -ge 2 ]; then exit "$rc"; fi
+          python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json, glob
+          for f in glob.glob("reports/drift_*.json"):
+              s = json.load(open(f))
+              if "slice" in s:
+                  print(f"**{s['slice']}**: {s['drifted_columns']}/{s['n_columns']} columns drifted, "
+                        f"share {s['drift_share']:.2f} (threshold {s['threshold']:.2f}) -> "
+                        f"{'DRIFT, retraining' if s['drift_detected'] else 'no drift'}")
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: drift-report
+          path: reports
+          retention-days: 30
+
+  retrain:
+    needs: check-drift
+    if: needs.check-drift.outputs.drift == 'true'
+    permissions:
+      contents: write
+    uses: ./.github/workflows/train.yml
+    with:
+      n_trials: "30"
+      reason: "drift share ${{ needs.check-drift.outputs.drift_share }} on the ${{ needs.check-drift.outputs.slice }} slice"
+    secrets: inherit
