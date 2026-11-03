@@ -1,0 +1,22 @@
+# Render Blueprint: one free web service running the FastAPI app.
+# Deploy: README "Deploy to Render" button -> sign in with GitHub -> Apply.
+services:
+  - type: web
+    name: credit-default-api
+    runtime: python
+    plan: free
+    autoDeploy: true            # redeploys when train.yml commits a new model
+    buildCommand: pip install -e ".[api]" && bash scripts/render_build.sh
+    startCommand: uvicorn credit_default.serve.app:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.8
+      - key: MODEL_SOURCE
+        value: local            # no public MLflow server; serve the bundled CI-trained model
+      - key: MODEL_BUNDLE_PATH
+        value: models/bundled/model.joblib
+      - key: PREDICTION_LOG_PATH
+        value: /tmp/predictions.sqlite   # free-tier disk is ephemeral
+      - key: MLFLOW_DISABLE_TELEMETRY
+        value: "true"

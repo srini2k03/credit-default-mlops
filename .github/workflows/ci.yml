@@ -1,0 +1,119 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  MLFLOW_DISABLE_TELEMETRY: "true"
+  MLFLOW_DISABLE_AGENT_HINT: "1"
+  DO_NOT_TRACK: "1"
+  PREFECT_SERVER_ANALYTICS_ENABLED: "false"
+
+jobs:
+  lint-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+      - name: Install
+        run: pip install -e ".[dev]"
+      - name: Ruff
+        run: |
+          ruff check .
+          ruff format --check .
+      - name: Pytest (synthetic fixture, no network)
+        run: python -m pytest
+      - name: End-to-end smoke on the synthetic fixture (train -> gate -> drift -> Prefect flow)
+        run: |
+          make train-synthetic
+          make gate-synthetic
+          python -m credit_default.monitor.drift data=synthetic --bundle=artifacts/run/model.joblib
+          make flow-synthetic
+      - name: Upload smoke model for the container test
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-bundle
+          path: artifacts/run/model.joblib
+          retention-days: 3
+
+  docker:
+    needs: lint-test
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: smoke-bundle
+          path: /tmp/smoke-bundle
+      - uses: docker/setup-buildx-action@v3
+      - id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=sha
+            type=raw,value=latest,enable={{is_default_branch}}
+      - name: Build API image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/Dockerfile
+          target: api
+          load: true
+          tags: credit-default-api:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Container smoke test (synthetic smoke model mounted)
+        run: |
+          chmod -R a+r /tmp/smoke-bundle
+          docker run -d --name api -p 8000:8000 -v /tmp/smoke-bundle:/bundle:ro \
+            -e MODEL_BUNDLE_PATH=/bundle/model.joblib credit-default-api:ci
+          for i in $(seq 1 30); do curl -fsS localhost:8000/health && break; sleep 2; done
+          bash scripts/smoke_api.sh http://localhost:8000
+      - name: Short Locust run (not committed; the recorded load test runs in train.yml)
+        run: |
+          pip install "locust>=2.29"
+          locust -f locust/locustfile.py --headless -u 10 -r 5 -t 20s --host http://localhost:8000 \
+            --csv /tmp/locust --only-summary
+          python locust/summarize.py /tmp/locust_stats.csv --users 10 --duration 20s \
+            --where "CI smoke, synthetic smoke model" >> "$GITHUB_STEP_SUMMARY"
+      - name: Container logs
+        if: always()
+        run: docker logs api || true
+      - name: Log in to GHCR
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Push to GHCR
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/Dockerfile
+          target: api
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha

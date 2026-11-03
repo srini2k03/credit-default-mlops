@@ -1,0 +1,83 @@
+name: pages
+
+# Publishes Evidently drift reports, committed results, the MLflow run summary and MLflow UI
+# screenshots to the gh-pages branch (Settings -> Pages -> Deploy from branch: gh-pages / root).
+on:
+  workflow_run:
+    workflows: [train, retrain]
+    types: [completed]
+  push:
+    branches: [main]
+    paths:
+      - results/**
+      - scripts/build_site.py
+      - .github/workflows/pages.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+env:
+  MLFLOW_DISABLE_TELEMETRY: "true"
+  MLFLOW_DISABLE_AGENT_HINT: "1"
+  DO_NOT_TRACK: "1"
+
+jobs:
+  build-and-publish:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+      - run: pip install -e ".[train,monitor]" markdown playwright
+      - uses: actions/cache@v4
+        with:
+          path: .dvcstore
+          key: dvcstore-${{ hashFiles('dvc.lock') }}
+          restore-keys: dvcstore-
+      - name: Real data
+        run: make data
+      - name: Evidently drift reports (control and drifted slices, with prediction drift if a model is committed)
+        run: python -m credit_default.monitor.drift
+      - name: Fetch the MLflow store from the latest successful train run
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          RUN_ID="${{ github.event.workflow_run.id }}"
+          if [ -z "$RUN_ID" ] || ! gh run download "$RUN_ID" -n mlflow-store -D mlruns 2>/dev/null; then
+            RUN_ID=$(gh run list --workflow train.yml --status success --limit 1 --json databaseId -q '.[0].databaseId')
+            if [ -n "$RUN_ID" ]; then gh run download "$RUN_ID" -n mlflow-store -D mlruns || true; fi
+          fi
+          ls -la mlruns 2>/dev/null || echo "no MLflow store available"
+      - name: MLflow UI screenshots (Playwright)
+        continue-on-error: true
+        run: |
+          test -f mlruns/mlflow.db || { echo "no MLflow store; skipping screenshots"; exit 0; }
+          python -m playwright install --with-deps chromium
+          mlflow server --host 127.0.0.1 --port 5000 --backend-store-uri sqlite:///mlruns/mlflow.db \
+            --default-artifact-root "$PWD/mlruns/artifacts" > /tmp/mlflow.log 2>&1 &
+          for i in $(seq 1 30); do curl -fsS localhost:5000/health && break; sleep 2; done
+          python scripts/mlflow_screenshots.py http://127.0.0.1:5000 site/screenshots
+      - name: Build site
+        run: python scripts/build_site.py
+      - uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./site
+          publish_branch: gh-pages
+          force_orphan: true
+          user_name: github-actions[bot]
+          user_email: 41898282+github-actions[bot]@users.noreply.github.com
+          commit_message: "Publish site"
