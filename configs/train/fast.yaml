@@ -1,0 +1,18 @@
+# Quick run: no tuning, one model family. Used by tests, smoke runs and the Render fallback build.
+models: [lightgbm]
+imbalance: class_weight
+ablation:
+  enabled: false
+  strategies: [none, class_weight, smote]
+  cv_folds: 3
+splits:
+  train: 0.60
+  calibration: 0.10
+  validation: 0.10
+  test: 0.20
+cv_folds: 3
+n_trials: 0
+timeout_s: 120
+selection_metric: business_cost
+shap_sample: 300
+background_rows: 50

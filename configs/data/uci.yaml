@@ -1,0 +1,23 @@
+# Real data: UCI "Default of Credit Card Clients" (Yeh & Lien, 2009), id 350, CC BY 4.0.
+source: uci
+raw_path: data/raw/credit_default.csv
+# sha256 of the canonical CSV written by credit_default.data.download (same bytes from every source).
+canonical_sha256: af6aa9d50511471c11fedd691155d36b5f2c81baa778b274118976ad5e750d59
+expected_rows: 30000
+sources:
+  - name: uci-archive
+    url: https://archive.ics.uci.edu/static/public/350/default+of+credit+card+clients.zip
+    kind: uci_zip            # zip that contains the original .xls
+    sha256: null             # zip bytes are not pinned; the extracted .xls and canonical CSV are
+    inner_sha256: 5cbcb12c989ec42c3ad8fdc315380a128c00fe9521e388d3f16e1ef9b2e32189  # warn-only; canonical sha is authoritative
+  - name: github-mirror-xls
+    # Git LFS object of the original UCI .xls, pinned to a commit.
+    url: https://media.githubusercontent.com/media/M0Sherif/Credit_Card_Default/da02b1c749fd08a76f28b817b4977cbb0a3e633a/default%20of%20credit%20card%20clients.xls
+    kind: uci_xls
+    sha256: 5cbcb12c989ec42c3ad8fdc315380a128c00fe9521e388d3f16e1ef9b2e32189
+  - name: github-mirror-csv
+    # Kaggle's CSV re-export of the same table (UCI_Credit_Card.csv), pinned to a commit.
+    url: https://media.githubusercontent.com/media/gabrieloa/augmentation-effective/7249f6a3bca011eebec23f6401af7db76a78cc8e/data/UCI_Credit_Card.csv
+    kind: kaggle_csv
+    sha256: a0f0ab49d6326671d6cd83be5c88dcf18007025fe9a53ecd699119c871176ca1
+timeout_s: 60

@@ -1,0 +1,11 @@
+# Data versioning. `make data` runs `dvc repro download`, then pushes to the default remote.
+# The stage's script verifies the canonical sha256 itself, so a changed upstream file fails loudly
+# instead of silently becoming a new data version.
+stages:
+  download:
+    cmd: python -m credit_default.data.download data=uci
+    deps:
+      - src/credit_default/data/download.py
+      - configs/data/uci.yaml
+    outs:
+      - data/raw/credit_default.csv

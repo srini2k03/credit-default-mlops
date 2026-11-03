@@ -1,0 +1,29 @@
+# Root Hydra config. Override anything from the CLI, e.g.
+#   python -m credit_default.pipeline.train data=synthetic train=fast train.n_trials=5
+defaults:
+  - data: uci
+  - train: default
+  - cost: default
+  - monitor: default
+  - registry: default
+  - model@models.logreg: logreg
+  - model@models.lightgbm: lightgbm
+  - model@models.xgboost: xgboost
+  - _self_
+
+seed: 42
+target: default_payment_next_month
+
+paths:
+  artifacts_dir: artifacts          # every run writes here (git-ignored)
+  results_dir: results              # only `publish` writes here, and only for real data
+  bundle_dir: models/bundled        # committed, CI-trained fallback model for serving
+  slices_dir: data/slices
+  reports_dir: reports
+  prediction_log: logs/predictions.sqlite
+
+validation:
+  lazy: true          # collect every violation, then raise: the pipeline stops at this step
+  min_rows: 1000
+  default_rate_min: 0.10
+  default_rate_max: 0.40

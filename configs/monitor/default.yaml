@@ -1,0 +1,9 @@
+drift_share_threshold: 0.30  # retrain when more than 30% of monitored columns drift
+slice_rows: 3000
+slice_seed: 11
+# The simulated "production" slice. The data has no timestamp, so drift is injected on purpose:
+drifted_shift:
+  limit_bal_factor: 0.70       # credit limits cut by 30%
+  age_shift_years: -6          # younger applicant mix (clipped to 21..79)
+  pay0_worsen_fraction: 0.35   # 35% of rows get one more month of delay on PAY_0
+  bill_amt_factor: 1.25        # balances up 25%
