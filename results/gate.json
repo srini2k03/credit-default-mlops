@@ -1,0 +1,21 @@
+{
+  "challenger": {
+    "approval_rate": 0.5263333333333333,
+    "brier": 0.13528513175200244,
+    "business_cost": 0.5625,
+    "f1": 0.48788678340129527,
+    "n": 6000,
+    "pr_auc": 0.5362360848350324,
+    "precision": 0.3578465869106263,
+    "recall": 0.7663903541823662,
+    "roc_auc": 0.7780548714891348,
+    "threshold": 0.13
+  },
+  "challenger_ref": "models:/credit-default@staging (v1)",
+  "passed": true,
+  "production": null,
+  "production_ref": "none",
+  "reasons": [
+    "no production model: challenger accepted as the first version"
+  ]
+}

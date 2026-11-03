@@ -29,17 +29,29 @@ Render's free tier sleeps when idle, so the first request after a pause takes ab
 ## Results
 
 <!-- RESULTS:START -->
-_Filled by `train.yml`._ No numbers appear here until the `train` workflow has trained on the
-real UCI data on a GitHub Actions runner and the quality gate has passed. The workflow rewrites
-this block with test-holdout ROC-AUC, PR-AUC, F1, Brier and business cost for every model
-family, the threshold comparison and the imbalance ablation, together with the date, commit and
-a link to the run. Metrics from the synthetic test fixture are never shown here.
+Real UCI data (30,000 rows, default rate 22.1%), test holdout n = 6,000. Generated 2026-11-03T13:40:05Z by the [train workflow run](https://github.com/srini2k03/credit-default-mlops/actions/runs/41645854230) at commit `d2d7669`. Costs FN:FP = 5:1.
 
 | Model | ROC-AUC | PR-AUC | F1 | Brier | Cost / applicant | Threshold |
 |---|---|---|---|---|---|---|
-| logreg | _filled by train.yml_ | | | | | |
-| lightgbm | _filled by train.yml_ | | | | | |
-| xgboost | _filled by train.yml_ | | | | | |
+| logreg | 0.740 | 0.478 | 0.471 | 0.143 | 0.601 | 0.13 |
+| **lightgbm** (champion) | 0.778 | 0.536 | 0.488 | 0.135 | 0.562 | 0.13 |
+| xgboost | 0.780 | 0.535 | 0.490 | 0.136 | 0.568 | 0.17 |
+
+Champion at different decision thresholds (test holdout):
+
+| Threshold rule | Threshold | Cost / applicant | Recall | Approval rate | F1 |
+|---|---|---|---|---|---|
+| cost-optimal | 0.13 | 0.562 | 0.766 | 0.526 | 0.488 |
+| 0.5 | 0.50 | 0.759 | 0.347 | 0.886 | 0.458 |
+| max-F1 | 0.39 | 0.619 | 0.524 | 0.792 | 0.539 |
+
+Imbalance ablation (CV PR-AUC on the training split):
+
+| Model | none | class_weight | smote |
+|---|---|---|---|
+| logreg | 0.515 | 0.513 | 0.514 |
+| lightgbm | 0.564 | 0.564 | 0.560 |
+| xgboost | 0.569 | 0.568 | 0.553 |
 <!-- RESULTS:END -->
 
 Full report: [`results/metrics.md`](results/metrics.md), quality gate:
