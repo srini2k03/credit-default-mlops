@@ -70,10 +70,14 @@ def mlflow_summary(cfg, out: Path) -> Path | None:
     try:
         from mlflow.tracking import MlflowClient
 
-        versions = MlflowClient().search_model_versions(f"name='{cfg.registry.model_name}'")
+        client = MlflowClient()
+        name = cfg.registry.model_name
+        versions = client.search_model_versions(f"name='{name}'")
         lines += ["## Registered versions", "", "| Version | Aliases | Run |", "|---|---|---|"]
         for v in sorted(versions, key=lambda v: int(v.version)):
-            lines.append(f"| {v.version} | {', '.join(v.aliases) or '-'} | `{v.run_id}` |")
+            # search_model_versions leaves .aliases empty; get_model_version fills it.
+            aliases = client.get_model_version(name, v.version).aliases
+            lines.append(f"| {v.version} | {', '.join(aliases) or '-'} | `{v.run_id}` |")
     except Exception as exc:
         log.warning("registry summary skipped: %s", exc)
     out.write_text("\n".join(lines) + "\n")

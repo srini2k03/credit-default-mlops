@@ -13,4 +13,4 @@ Experiment `credit-default`, exported after the training run.
 
 | Version | Aliases | Run |
 |---|---|---|
-| 1 | - | `b8bfce8214cc4d2bbc9cc79fe1f74d0b` |
+| 1 | production, staging | `b8bfce8214cc4d2bbc9cc79fe1f74d0b` |

@@ -21,3 +21,15 @@ def test_flow_module_wires_all_steps():
     assert f.training_flow.name == "credit-default-training"
     for t in (f.ingest, f.validate, f.train, f.evaluate, f.register):
         assert callable(t.fn)
+
+
+def test_mlflow_summary_lists_aliases(trained, cfg, tmp_path):
+    from credit_default.pipeline.publish import mlflow_summary
+
+    out = mlflow_summary(cfg, tmp_path / "mlflow_summary.md")
+    rows = [
+        line
+        for line in out.read_text().splitlines()
+        if line.startswith(f"| {trained.model_version} |")
+    ]
+    assert rows and cfg.registry.staging_alias in rows[0]
