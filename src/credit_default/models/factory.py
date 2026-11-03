@@ -4,6 +4,9 @@ Imbalance strategies (compared in an ablation, chosen by config):
 - ``class_weight``: ``class_weight="balanced"`` (LogReg, LightGBM) or ``scale_pos_weight`` (XGBoost)
 - ``smote``: SMOTE inside the imblearn pipeline, so it only ever sees the training fold
 - ``none``: no correction (isotonic calibration still fixes the probability scale)
+
+Thread count is explicit (``train.n_jobs``): LightGBM and XGBoost ship different OpenMP runtimes,
+and "use every core" (-1) oversubscribes badly when both are loaded or the host is busy.
 """
 
 from __future__ import annotations
@@ -23,7 +26,9 @@ FAMILIES = ("logreg", "lightgbm", "xgboost")
 STRATEGIES = ("none", "class_weight", "smote")
 
 
-def build_estimator(family: str, params: dict[str, Any], strategy: str, pos_rate: float, seed: int):
+def build_estimator(
+    family: str, params: dict[str, Any], strategy: str, pos_rate: float, seed: int, n_jobs: int = 1
+):
     params = dict(params)
     weighted = strategy == "class_weight"
     if family == "logreg":
@@ -34,7 +39,7 @@ def build_estimator(family: str, params: dict[str, Any], strategy: str, pos_rate
         return LGBMClassifier(
             class_weight="balanced" if weighted else None,
             random_state=seed,
-            n_jobs=-1,
+            n_jobs=n_jobs,
             verbose=-1,
             **params,
         )
@@ -43,7 +48,7 @@ def build_estimator(family: str, params: dict[str, Any], strategy: str, pos_rate
         return XGBClassifier(
             scale_pos_weight=spw,
             random_state=seed,
-            n_jobs=-1,
+            n_jobs=n_jobs,
             tree_method="hist",
             eval_metric="logloss",
             **params,
@@ -57,6 +62,7 @@ def build_pipeline(
     strategy: str = "class_weight",
     pos_rate: float = 0.22,
     seed: int = 42,
+    n_jobs: int = 1,
 ) -> Pipeline:
     if strategy not in STRATEGIES:
         raise ValueError(f"unknown imbalance strategy {strategy!r}; expected one of {STRATEGIES}")
@@ -66,7 +72,7 @@ def build_pipeline(
     ]
     if strategy == "smote":
         steps.append(("smote", SMOTE(random_state=seed)))
-    steps.append(("model", build_estimator(family, params, strategy, pos_rate, seed)))
+    steps.append(("model", build_estimator(family, params, strategy, pos_rate, seed, n_jobs)))
     return Pipeline(steps)
 
 

@@ -75,7 +75,7 @@ def fit_family(
     Xtr, ytr = splits.xy(splits.train)
     Xcal, ycal = splits.xy(splits.calibration)
     Xval, yval = splits.xy(splits.validation)
-    pipe = build_pipeline(family, params, strategy, positive_rate(ytr), cfg.seed)
+    pipe = build_pipeline(family, params, strategy, positive_rate(ytr), cfg.seed, cfg.train.n_jobs)
     pipe.fit(Xtr, ytr)
     calibrator = CalibratedClassifierCV(FrozenEstimator(pipe), method="isotonic")
     calibrator.fit(Xcal, ycal)
@@ -151,6 +151,7 @@ def _train(cfg, df: pd.DataFrame, data_info: dict, register: bool) -> TrainResul
                 cfg.train.cv_folds,
                 cfg.seed,
                 cfg.train.timeout_s,
+                cfg.train.n_jobs,
             )
             tuning_s = time.time() - ts
             bundle, extra = fit_family(cfg, family, splits, params, strategy)
@@ -209,6 +210,7 @@ def _train(cfg, df: pd.DataFrame, data_info: dict, register: bool) -> TrainResul
             ytr,
             cfg.train.ablation.cv_folds,
             cfg.seed,
+            cfg.train.n_jobs,
         )
 
     # Threshold comparison for the champion: cost-optimal vs 0.5 vs max-F1 (chosen on validation).
@@ -310,13 +312,15 @@ def _train(cfg, df: pd.DataFrame, data_info: dict, register: bool) -> TrainResul
         {"run_id": run_id, "model_version": version, "champion": champion.family},
         out_dir / "run_info.json",
     )
+    registered = (
+        f"registered v{version} as @{cfg.registry.staging_alias}" if version else "not registered"
+    )
     log.info(
-        "champion %s | test PR-AUC %.4f | cost %.4f | registered v%s (alias %s)",
+        "champion %s | test PR-AUC %.4f | cost %.4f | %s",
         champion.family,
         champion.test_metrics["pr_auc"],
         champion.test_metrics["business_cost"],
-        version,
-        cfg.registry.staging_alias,
+        registered,
     )
     return result
 
