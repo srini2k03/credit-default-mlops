@@ -44,6 +44,51 @@ EXAMPLE = {
     "PAY_AMT6": 1000,
 }
 
+# A customer who pays every bill in full on time.
+LOW_RISK_EXAMPLE = {
+    "LIMIT_BAL": 200000,
+    "SEX": 1,
+    "EDUCATION": 1,
+    "MARRIAGE": 2,
+    "AGE": 41,
+    "PAY_0": -1,
+    "PAY_2": -1,
+    "PAY_3": -1,
+    "PAY_4": -1,
+    "PAY_5": -1,
+    "PAY_6": -1,
+    "BILL_AMT1": 3913,
+    "BILL_AMT2": 3102,
+    "BILL_AMT3": 689,
+    "BILL_AMT4": 1500,
+    "BILL_AMT5": 2400,
+    "BILL_AMT6": 1800,
+    "PAY_AMT1": 3102,
+    "PAY_AMT2": 689,
+    "PAY_AMT3": 1500,
+    "PAY_AMT4": 2400,
+    "PAY_AMT5": 1800,
+    "PAY_AMT6": 3913,
+}
+
+# Pre-filled request bodies for the Swagger UI "Try it out" button.
+OPENAPI_EXAMPLES = {
+    "late_payer": {
+        "summary": "Applicant 2 months late on the last two bills",
+        "value": EXAMPLE,
+    },
+    "low_risk": {
+        "summary": "Applicant who pays every bill in full",
+        "value": LOW_RISK_EXAMPLE,
+    },
+}
+OPENAPI_BATCH_EXAMPLES = {
+    "two_applicants": {
+        "summary": "One late payer and one low-risk applicant",
+        "value": {"applications": [EXAMPLE, LOW_RISK_EXAMPLE]},
+    },
+}
+
 
 class CreditApplication(BaseModel):
     model_config = ConfigDict(extra="forbid", json_schema_extra={"examples": [EXAMPLE]})
