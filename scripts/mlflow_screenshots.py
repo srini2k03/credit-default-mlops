@@ -28,11 +28,14 @@ def main() -> int:
     }
     with sync_playwright() as p:
         browser = p.chromium.launch()
-        page = browser.new_page(viewport={"width": 1440, "height": 900})
         for name, url in pages.items():
+            # A fresh page per URL: the URLs differ only in the #fragment, and a same-document
+            # goto on a reused page never reaches "networkidle" (Page.goto timed out in CI).
+            page = browser.new_page(viewport={"width": 1440, "height": 900})
             page.goto(url, wait_until="networkidle")
             page.wait_for_timeout(3000)
             page.screenshot(path=str(out / name), full_page=False)
+            page.close()
             print("saved", out / name)
         browser.close()
     return 0
