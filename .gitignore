@@ -27,3 +27,12 @@ site/
 # local caches
 .prefect/
 .locust/
+
+# terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+terraform.tfvars
+.terraform.lock.hcl
+crash.log

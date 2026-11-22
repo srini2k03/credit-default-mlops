@@ -1,0 +1,6 @@
+# Copy to terraform.tfvars and edit. terraform.tfvars is git-ignored.
+region            = "us-east-1"
+alarm_email       = "REPLACE_ME@example.com" # budget alerts; confirm the email AWS sends
+github_repository = "srini2k03/credit-default-mlops"
+# monthly_budget_usd   = 1
+# create_oidc_provider = false   # if the account already has token.actions.githubusercontent.com

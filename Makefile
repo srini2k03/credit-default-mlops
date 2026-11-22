@@ -9,7 +9,8 @@ PORT ?= 8000
 
 .PHONY: help install lint format test data fixtures validate train train-synthetic gate gate-synthetic \
         bootstrap publish serve smoke drift drift-synthetic check-drift flow flow-synthetic \
-        loadtest docker-build compose-up compose-down site clean
+        loadtest docker-build compose-up compose-down site clean \
+        infra-bootstrap infra-validate
 
 help:  ## list targets
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  %-18s %s\n",$$1,$$2}'
@@ -99,6 +100,23 @@ compose-up:  ## mlflow + api + report server
 
 compose-down:
 	docker compose down
+
+# ---- AWS (see docs/aws_setup.md; run from AWS CloudShell or with admin credentials) -------------
+TF ?= terraform
+INFRA_BOOT := infra/bootstrap
+INFRA_APP := infra/app
+
+infra-bootstrap:  ## one-time AWS bootstrap: state bucket, OIDC deploy role, ECR, S3 buckets, budget
+	@test -f $(INFRA_BOOT)/terraform.tfvars || { echo "cp $(INFRA_BOOT)/terraform.tfvars.example $(INFRA_BOOT)/terraform.tfvars and edit it first"; exit 1; }
+	cd $(INFRA_BOOT) && $(TF) init -input=false && $(TF) apply
+	@# the local state is the source of truth; keep a copy in the state bucket
+	cd $(INFRA_BOOT) && aws s3 cp terraform.tfstate "s3://$$($(TF) output -raw state_bucket)/bootstrap/terraform.tfstate" --only-show-errors
+	@echo; echo "Set these GitHub repository variables:"; cd $(INFRA_BOOT) && $(TF) output -raw gh_variable_commands
+
+infra-validate:  ## terraform fmt check + validate for both stacks (no AWS credentials needed)
+	$(TF) fmt -check -recursive infra
+	cd $(INFRA_BOOT) && $(TF) init -backend=false -input=false >/dev/null && $(TF) validate
+	@if [ -d $(INFRA_APP) ]; then cd $(INFRA_APP) && $(TF) init -backend=false -input=false >/dev/null && $(TF) validate; fi
 
 clean:
 	rm -rf artifacts outputs reports site mlruns logs .pytest_cache .ruff_cache
