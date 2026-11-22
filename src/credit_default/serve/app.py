@@ -13,6 +13,7 @@ from fastapi import Body, FastAPI, HTTPException, Query, Request
 from fastapi.responses import JSONResponse, RedirectResponse
 
 from credit_default import __version__
+from credit_default.serve.logging_setup import RequestContextMiddleware, configure_logging
 from credit_default.serve.model_loader import REPO_ROOT, LoadedModel, load_model
 from credit_default.serve.prediction_log import PredictionLogger
 from credit_default.serve.schemas import (
@@ -28,7 +29,7 @@ from credit_default.serve.schemas import (
 )
 
 log = logging.getLogger("credit_default.serve")
-logging.basicConfig(level=os.environ.get("LOG_LEVEL", "INFO"))
+configure_logging()  # LOG_FORMAT=text (default) | json
 
 
 @asynccontextmanager
@@ -57,6 +58,7 @@ app = FastAPI(
     ),
     lifespan=lifespan,
 )
+app.add_middleware(RequestContextMiddleware)
 
 
 def _model(request: Request) -> LoadedModel:
