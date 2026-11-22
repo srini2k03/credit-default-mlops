@@ -31,7 +31,9 @@ ENV PORT=8000 \
 EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s \
   CMD python -c "import os, urllib.request; urllib.request.urlopen(f'http://localhost:{os.environ[\"PORT\"]}/health', timeout=4)"
-CMD ["sh", "-c", "exec uvicorn credit_default.serve.app:app --host 0.0.0.0 --port ${PORT} --workers ${WEB_CONCURRENCY:-1}"]
+# Behind a load balancer: trust X-Forwarded-* (the container is reachable only through it) and
+# give in-flight requests 20 s to finish on SIGTERM (below ECS's default 30 s stop timeout).
+CMD ["sh", "-c", "exec uvicorn credit_default.serve.app:app --host 0.0.0.0 --port ${PORT} --workers ${WEB_CONCURRENCY:-1} --proxy-headers --forwarded-allow-ips='*' --timeout-graceful-shutdown 20"]
 
 FROM base AS train
 RUN pip install -e ".[train,monitor,orchestrate]"
