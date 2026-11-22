@@ -399,10 +399,24 @@ cool-down) while `kubectl` samples the HPA and pod counts every 10 s. It commits
 `loadtest.png` (p50/p95 latency, requests/s and replicas over time). On a laptop:
 `make kind-up kind-loadtest kind-down`.
 
-**Results: not available yet.** The load-test workflow is written but has not run: this branch
-could not be pushed when the workflow was added (see Limitations), and the environment it was
-written in has no Docker daemon. The numbers will be in
-[`results/k8s/summary.md`](results/k8s/) after the first run; none are quoted here until then.
+**Results** (run 44990965540 on a GitHub-hosted runner, commit `6abb1be`; full tables and the
+chart in [`results/k8s/summary.md`](results/k8s/summary.md)):
+
+| Users | Requests/s | p50 (ms) | p95 (ms) | Failures | Peak ready pods |
+|---:|---:|---:|---:|---:|---:|
+| 10 | 72.7 | 10 | 27 | 0.00% | 4 |
+| 25 | 176.3 | 12 | 43 | 0.00% | 5 |
+| 50 | 307.6 | 25 | 110 | 0.00% | 5 |
+| 100 | 339.6 | 150 | 380 | 0.00% | 5 |
+| 150 | 333.0 | 310 | 670 | 0.00% | 5 |
+
+- The HPA scaled from 1 to 5 pods within the first step and back to 1 about 108 s after the load
+  stopped (60 s scale-down stabilisation); 147,338 requests, 0 failures.
+- Throughput levels off at about 335 requests/s once all 5 pods are busy: the single 4-vCPU node
+  (shared with the load generator) is the limit, so beyond 50 users extra load only adds queueing
+  (p95 110 ms at 50 users, 670 ms at 150).
+
+![kind load test: latency, requests/s and replicas over time](results/k8s/loadtest.png)
 
 ## Limitations
 
