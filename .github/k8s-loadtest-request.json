@@ -1,0 +1,4 @@
+{
+  "note": "Change requested_at and push to run the kind + HPA load test (k8s-loadtest.yml) on this branch; results are committed to results/k8s/.",
+  "requested_at": "2026-11-22T05:00:00Z"
+}

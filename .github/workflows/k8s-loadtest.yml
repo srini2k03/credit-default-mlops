@@ -1,0 +1,75 @@
+name: k8s-loadtest
+
+# kind + Helm + HPA load test on a GitHub-hosted runner (free; nothing is left running).
+# Trigger: dispatch, or push a change to .github/k8s-loadtest-request.json on any branch.
+# Results (results/k8s/) are committed back to the branch that triggered the run.
+on:
+  workflow_dispatch:
+    inputs:
+      steps:
+        description: Locust users per step
+        default: "10,25,50,100,150"
+      step_seconds:
+        description: Seconds per step
+        default: "120"
+  push:
+    paths:
+      - .github/k8s-loadtest-request.json
+
+permissions:
+  contents: write
+
+concurrency:
+  group: k8s-loadtest-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  loadtest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      CLUSTER: credit-default
+      STEPS: ${{ inputs.steps || '10,25,50,100,150' }}
+      STEP_SECONDS: ${{ inputs.step_seconds || '120' }}
+      COOLDOWN_SECONDS: "300"
+      RAW: /tmp/k8s-loadtest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Load generator and report dependencies
+        run: pip install "locust>=2.29" "pandas>=2.2,<3" "matplotlib>=3.8"
+      - uses: azure/setup-helm@v4
+      - uses: helm/kind-action@v1
+        with:
+          cluster_name: ${{ env.CLUSTER }}
+          config: deploy/kind/kind-config.yaml
+      - name: Run the load test
+        env:
+          CONTEXT: "Run ${{ github.run_id }} on GitHub Actions (ubuntu-latest, ${{ runner.arch }}), commit ${{ github.sha }}."
+        run: |
+          echo "CPUs: $(nproc), memory: $(free -g | awk '/Mem:/{print $2}') GB"
+          bash scripts/k8s/run_loadtest.sh
+          cat results/k8s/summary.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload raw files
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: k8s-loadtest-raw
+          path: ${{ env.RAW }}
+          retention-days: 14
+      - name: Commit the results to ${{ github.ref_name }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add results/k8s
+          if git diff --cached --quiet; then echo "no changes"; exit 0; fi
+          git commit -m "Update kind HPA load test results (run ${{ github.run_id }})"
+          for i in 1 2 3 4 5; do
+            git pull --rebase origin "${{ github.ref_name }}" && git push origin "HEAD:${{ github.ref_name }}" && exit 0
+            echo "push attempt $i failed; retrying"; sleep $(( i * 5 ))
+          done
+          exit 1

@@ -1,14 +1,17 @@
 name: infra-ci
 
-# Static checks for the Terraform stacks. No AWS credentials: init runs with -backend=false.
+# Static checks for the Terraform stacks and the Helm chart. No AWS credentials: Terraform init
+# runs with -backend=false.
 on:
   push:
     paths:
       - infra/**
+      - deploy/**
       - .github/workflows/infra-ci.yml
   pull_request:
     paths:
       - infra/**
+      - deploy/**
       - .github/workflows/infra-ci.yml
   workflow_dispatch:
 
@@ -50,3 +53,25 @@ jobs:
         run: pip install "checkov==3.4.6"
       - name: Static security scan (accepted risks are annotated inline with checkov:skip and a reason)
         run: checkov -d infra --framework terraform --compact --quiet
+
+  helm:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/setup-helm@v4
+      - name: Install kubeconform
+        run: |
+          curl -fsSL https://github.com/yannh/kubeconform/releases/download/v0.6.7/kubeconform-linux-amd64.tar.gz \
+            | tar xz -C /usr/local/bin kubeconform
+      - name: helm lint (defaults and the kind load-test values)
+        run: |
+          helm lint deploy/helm/credit-default
+          helm lint deploy/helm/credit-default -f deploy/kind/values-loadtest.yaml
+      - name: kubeconform (strict, Kubernetes 1.31 schemas)
+        run: |
+          for values in "" "-f deploy/kind/values-loadtest.yaml" "--set autoscaling.enabled=false --set podDisruptionBudget.enabled=false"; do
+            # shellcheck disable=SC2086
+            helm template credit-default deploy/helm/credit-default $values \
+              | kubeconform -strict -summary -kubernetes-version 1.31.0
+          done

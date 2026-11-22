@@ -1,0 +1,9 @@
+apiVersion: v2
+name: credit-default
+description: Credit default risk API (FastAPI) with probes, HPA and a PodDisruptionBudget
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+keywords: [fastapi, mlops, credit-risk]
+sources:
+  - https://github.com/srini2k03/credit-default-mlops

@@ -10,7 +10,8 @@ PORT ?= 8000
 .PHONY: help install lint format test data fixtures validate train train-synthetic gate gate-synthetic \
         bootstrap publish serve smoke drift drift-synthetic check-drift flow flow-synthetic \
         loadtest docker-build compose-up compose-down site clean \
-        infra-bootstrap infra-validate app-init up destroy infra-plan nuke
+        infra-bootstrap infra-validate app-init up destroy infra-plan nuke \
+        kind-up kind-loadtest kind-down
 
 help:  ## list targets
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  %-18s %s\n",$$1,$$2}'
@@ -144,6 +145,18 @@ nuke:  ## destroy the app stack, empty the state bucket, then destroy the bootst
 	$(MAKE) destroy
 	bash scripts/aws/empty_bucket.sh "$(TF_STATE_BUCKET)"
 	cd $(INFRA_BOOT) && $(TF) destroy -input=false -auto-approve
+
+# ---- Kubernetes on a laptop (kind + Helm + HPA; needs docker, kind, kubectl, helm) -------------
+KIND_CLUSTER ?= credit-default
+
+kind-up:  ## create a local kind cluster (NodePort 30080 -> localhost:8080)
+	kind create cluster --name $(KIND_CLUSTER) --config deploy/kind/kind-config.yaml
+
+kind-loadtest:  ## build, install the chart, stepped Locust load with HPA sampling -> results/k8s/
+	CLUSTER=$(KIND_CLUSTER) PY=$(PY) CONTEXT="Local run (make kind-loadtest)." bash scripts/k8s/run_loadtest.sh
+
+kind-down:  ## delete the local kind cluster
+	kind delete cluster --name $(KIND_CLUSTER)
 
 infra-validate:  ## terraform fmt check + validate for both stacks (no AWS credentials needed)
 	$(TF) fmt -check -recursive infra

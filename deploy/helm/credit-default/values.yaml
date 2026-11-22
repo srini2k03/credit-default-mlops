@@ -1,0 +1,91 @@
+nameOverride: ""
+fullnameOverride: ""
+
+# Image built from docker/Dockerfile (target api). The bundled model is baked in.
+image:
+  repository: ghcr.io/srini2k03/credit-default-mlops
+  tag: latest
+  pullPolicy: IfNotPresent
+
+# Ignored while autoscaling.enabled (the HPA owns the replica count).
+replicaCount: 1
+
+containerPort: 8000
+
+# Plain environment variables for the container (see the README's configuration table).
+env:
+  LOG_FORMAT: json
+  MODEL_SOURCE: local
+  PREDICTION_LOG_PATH: /tmp/predictions.sqlite
+  WEB_CONCURRENCY: "1"
+  # The root filesystem is read-only; caches go to the /tmp emptyDir.
+  NUMBA_CACHE_DIR: /tmp/numba
+  MPLCONFIGDIR: /tmp/matplotlib
+
+# Extra env entries in Kubernetes form (valueFrom, secrets, ...).
+extraEnv: []
+
+resources:
+  requests:
+    cpu: 250m
+    memory: 512Mi
+  limits:
+    cpu: "1"
+    memory: 1Gi
+
+service:
+  type: ClusterIP
+  port: 80
+  # Only used when type is NodePort.
+  nodePort: null
+
+probes:
+  # Model load takes a few seconds; the startup probe holds the other probes until /health is 200.
+  startup:
+    periodSeconds: 2
+    failureThreshold: 60
+    timeoutSeconds: 3
+  readiness:
+    periodSeconds: 5
+    failureThreshold: 2
+    timeoutSeconds: 3
+  liveness:
+    periodSeconds: 15
+    failureThreshold: 3
+    timeoutSeconds: 5
+
+autoscaling:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 50
+  # autoscaling/v2 behavior block, passed through as is.
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+
+terminationGracePeriodSeconds: 30
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 10001
+  runAsGroup: 10001
+  fsGroup: 10001
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop: ["ALL"]
+
+podAnnotations: {}
+podLabels: {}
+nodeSelector: {}
+tolerations: []
+affinity: {}

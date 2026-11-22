@@ -1,0 +1,8 @@
+Credit default API: service {{ include "credit-default.fullname" . }} (port {{ .Values.service.port }}).
+
+  kubectl port-forward svc/{{ include "credit-default.fullname" . }} 8000:{{ .Values.service.port }}
+  curl localhost:8000/health
+
+{{- if .Values.autoscaling.enabled }}
+HPA: {{ .Values.autoscaling.minReplicas }}-{{ .Values.autoscaling.maxReplicas }} replicas at {{ .Values.autoscaling.targetCPUUtilizationPercentage }}% CPU (needs metrics-server).
+{{- end }}

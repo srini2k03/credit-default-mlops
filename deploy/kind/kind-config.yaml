@@ -1,0 +1,11 @@
+# Single-node kind cluster; the API's NodePort 30080 is reachable on localhost:8080, so the
+# load generator goes through kube-proxy and is balanced across all pods.
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+nodes:
+  - role: control-plane
+    extraPortMappings:
+      - containerPort: 30080
+        hostPort: 8080
+        listenAddress: "127.0.0.1"
+        protocol: TCP

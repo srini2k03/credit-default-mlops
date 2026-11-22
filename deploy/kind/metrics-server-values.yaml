@@ -1,0 +1,4 @@
+# kind's kubelets use self-signed certificates. The chart's defaultArgs already set
+# --metric-resolution=15s and the address types.
+args:
+  - --kubelet-insecure-tls
