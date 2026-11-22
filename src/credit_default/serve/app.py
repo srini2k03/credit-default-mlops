@@ -126,6 +126,7 @@ def health(request: Request):
         model_loaded=True,
         model_source=m.source,
         model_version=m.version,
+        model_uri=m.uri,
         model_family=m.bundle.family,
         threshold=m.bundle.threshold,
     )

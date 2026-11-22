@@ -43,10 +43,13 @@ train = [
   "dvc>=3.50",
 ]
 monitor = ["evidently>=0.7,<0.8"]
+# MODEL_SOURCE=s3: imported only when an S3 model is requested.
+aws = ["boto3>=1.34"]
 orchestrate = ["prefect>=3.0"]
 dev = [
-  "credit-default-mlops[api,train,monitor,orchestrate]",
+  "credit-default-mlops[api,train,monitor,orchestrate,aws]",
   "pytest>=8",
+  "moto[s3]>=5",
   "httpx>=0.27",
   "ruff>=0.6",
   "locust>=2.29",

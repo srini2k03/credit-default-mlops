@@ -134,7 +134,7 @@ class Prediction(BaseModel):
     decision: Literal["approve", "decline"]
     threshold: float = Field(description="Cost-optimal threshold chosen on validation data")
     model_version: str
-    model_source: Literal["registry", "local"]
+    model_source: Literal["s3", "registry", "local"]
 
 
 class BatchResponse(BaseModel):
@@ -165,6 +165,7 @@ class Health(BaseModel):
     model_loaded: bool
     model_source: str | None = None
     model_version: str | None = None
+    model_uri: str | None = None
     model_family: str | None = None
     threshold: float | None = None
     detail: str | None = None

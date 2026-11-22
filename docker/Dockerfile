@@ -18,7 +18,8 @@ COPY pyproject.toml README.md ./
 COPY src ./src
 
 FROM base AS api
-RUN pip install -e ".[api]"
+# aws: boto3 for MODEL_SOURCE=s3 (only imported when S3 is used).
+RUN pip install -e ".[api,aws]"
 # The bundled model (committed by train.yml) is the fallback when no registry is reachable.
 COPY models ./models
 RUN useradd --create-home --uid 10001 app && mkdir -p /app/logs && chown -R app /app/logs
