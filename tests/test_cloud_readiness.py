@@ -265,3 +265,27 @@ def test_unwritable_prediction_log_disables_itself(make_client, tmp_path, clean_
         assert c.post("/predict", json=EXAMPLE).status_code == 200
     warnings = [r for r in caplog.records if "prediction log disabled" in r.getMessage()]
     assert len(warnings) == 1
+
+
+# ---------------------------------------------------------------- MLflow artifact location
+
+
+def test_experiment_artifact_location():
+    from credit_default.config import REPO_ROOT
+    from credit_default.registry.mlflow_registry import experiment_artifact_location as loc
+
+    assert loc("sqlite:////x/mlflow.db", "s3://bucket/mlflow") == "s3://bucket/mlflow"
+    assert loc("http://mlflow:5000", "s3://bucket/mlflow") == "s3://bucket/mlflow"
+    assert loc("sqlite:////x/mlflow.db", "mlruns/artifacts") == (
+        (REPO_ROOT / "mlruns/artifacts").resolve().as_uri()
+    )
+    assert loc("http://mlflow:5000", "mlruns/artifacts") is None
+
+
+def test_artifact_location_env_override(monkeypatch):
+    from credit_default.config import load_config
+
+    monkeypatch.delenv("MLFLOW_ARTIFACT_LOCATION", raising=False)
+    assert load_config([]).registry.artifact_location == "mlruns/artifacts"
+    monkeypatch.setenv("MLFLOW_ARTIFACT_LOCATION", "s3://bucket/mlflow")
+    assert load_config([]).registry.artifact_location == "s3://bucket/mlflow"

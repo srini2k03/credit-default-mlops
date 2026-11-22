@@ -34,6 +34,7 @@ on:
 
 permissions:
   contents: write
+  id-token: write   # OIDC to AWS; used only when the AWS repository variables are set
 
 concurrency:
   group: train
@@ -44,6 +45,9 @@ env:
   MLFLOW_DISABLE_AGENT_HINT: "1"
   DO_NOT_TRACK: "1"
   MLFLOW_TRACKING_URI: sqlite:///mlruns/mlflow.db
+  # S3 for DVC, MLflow artifacts, the registry db and the production model: only when the
+  # repository variables from infra/bootstrap exist. Otherwise everything below behaves as before.
+  AWS_ENABLED: ${{ vars.AWS_ROLE_ARN != '' && vars.MLFLOW_ARTIFACT_BUCKET != '' && vars.DVC_BUCKET != '' }}
 
 jobs:
   train:
@@ -61,6 +65,29 @@ jobs:
           cache-dependency-path: pyproject.toml
       - name: Install
         run: pip install -e ".[dev]"
+      - name: AWS not configured
+        if: env.AWS_ENABLED != 'true'
+        run: echo "::notice::AWS repository variables not set; DVC, MLflow and the model stay local (no S3)."
+      - name: AWS credentials (OIDC)
+        if: env.AWS_ENABLED == 'true'
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION || 'us-east-1' }}
+          role-duration-seconds: 7200
+      - name: Use S3 for DVC and MLflow; restore the registry db
+        if: env.AWS_ENABLED == 'true'
+        run: |
+          pip install -q "dvc-s3>=3.2"
+          dvc remote modify --local s3 url "s3://${{ vars.DVC_BUCKET }}/dvc"
+          dvc remote default --local s3
+          echo "MLFLOW_ARTIFACT_LOCATION=s3://${{ vars.MLFLOW_ARTIFACT_BUCKET }}/mlflow" >> "$GITHUB_ENV"
+          mkdir -p mlruns
+          if aws s3 cp "s3://${{ vars.MLFLOW_ARTIFACT_BUCKET }}/registry/mlflow.db" mlruns/mlflow.db --only-show-errors; then
+            echo "restored the MLflow registry from S3"
+          else
+            echo "no registry db in S3 yet; the bootstrap step re-creates @production from the committed bundle"
+          fi
       - name: Restore the DVC remote (local remote persisted with actions/cache)
         uses: actions/cache@v4
         with:
@@ -78,12 +105,30 @@ jobs:
           python -m credit_default.pipeline.train train.n_trials=${{ inputs.n_trials || '30' }} 2>&1 | tee artifacts/train.log
       - name: Quality gate (fails the job if the challenger is worse than production)
         run: python -m credit_default.registry.gate --promote
+      - name: Refresh AWS credentials
+        if: always() && env.AWS_ENABLED == 'true'
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION || 'us-east-1' }}
+      - name: Save the MLflow registry db to S3 (versioned bucket; also after a rejected gate)
+        if: always() && env.AWS_ENABLED == 'true' && hashFiles('mlruns/mlflow.db') != ''
+        run: aws s3 cp mlruns/mlflow.db "s3://${{ vars.MLFLOW_ARTIFACT_BUCKET }}/registry/mlflow.db" --only-show-errors
       - name: Publish results and the bundled model
         run: |
           python -m credit_default.pipeline.publish
           python scripts/update_readme_results.py
           cat results/metrics.md >> "$GITHUB_STEP_SUMMARY"
           cat results/gate.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Publish the production model to S3 (loaded by ECS with MODEL_SOURCE=s3)
+        if: env.AWS_ENABLED == 'true'
+        env:
+          DEST: s3://${{ vars.MLFLOW_ARTIFACT_BUCKET }}/models/production
+        run: |
+          python scripts/aws/model_pointer.py models/bundled/model.joblib "$DEST/model.joblib" > artifacts/model.json
+          aws s3 cp models/bundled/model.joblib "$DEST/model.joblib" --only-show-errors
+          aws s3 cp artifacts/model.json "$DEST/model.json" --content-type application/json --only-show-errors
+          cat artifacts/model.json
       - name: Build the API image with the new model
         run: docker build -f docker/Dockerfile --target api -t credit-default-api:train .
       - name: Load test (Locust headless, 20 users, 60 s) -> results/loadtest.md

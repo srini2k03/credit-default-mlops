@@ -88,6 +88,30 @@ yourself as a required reviewer makes every infra change and branch deploy wait 
 
 No secrets are needed: workflows get short-lived credentials through OIDC.
 
+## 4. MLflow and DVC on S3
+
+Once the variables exist, `train.yml` (on main) switches to S3 by itself. Without them it runs as
+before: local DVC remote cached in Actions, an empty MLflow registry recreated from the committed
+bundle each run.
+
+| What | Where | How |
+|---|---|---|
+| DVC remote | `s3://<DVC_BUCKET>/dvc` | the `s3` remote in `.dvc/config` holds a placeholder URL; CI writes the real bucket and makes it the default in `.dvc/config.local` (`local` stays the committed default, so forks keep working) |
+| MLflow artifacts | `s3://<MLFLOW_ARTIFACT_BUCKET>/mlflow` | `MLFLOW_ARTIFACT_LOCATION`, read when the experiment is first created |
+| MLflow registry | `s3://<MLFLOW_ARTIFACT_BUCKET>/registry/mlflow.db` | SQLite backend kept; downloaded before training, uploaded after the gate (also after a rejection). The bucket is versioned, so earlier registry states can be restored |
+| Production model | `s3://<MLFLOW_ARTIFACT_BUCKET>/models/production/model.joblib` + `model.json` | uploaded after a promotion; `model.json` records the registry version, commit, sha256 and run. The ECS task loads it with `MODEL_SOURCE=s3` |
+
+The train job uses `role-duration-seconds: 7200` (the role allows 2 hours) and refreshes the
+credentials before the S3 uploads at the end.
+
+To use the S3 remote from a laptop with AWS credentials:
+
+```bash
+pip install "dvc-s3>=3.2"
+dvc remote modify --local s3 url s3://<DVC_BUCKET>/dvc
+dvc pull -r s3
+```
+
 ## Teardown
 
 Remove everything, including the bootstrap (run in CloudShell from the repository directory):

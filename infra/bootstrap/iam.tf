@@ -55,7 +55,7 @@ resource "aws_iam_role" "deploy" {
   name                 = "${var.project}-github-deploy"
   description          = "Assumed by GitHub Actions (OIDC) for ${var.github_repository}"
   assume_role_policy   = data.aws_iam_policy_document.deploy_trust.json
-  max_session_duration = 3600
+  max_session_duration = 7200 # train.yml can run up to 2 hours
 }
 
 # ---------------------------------------------------------------- boundary for roles the app stack creates

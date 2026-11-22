@@ -75,6 +75,7 @@ jobs:
     if: needs.check-drift.outputs.drift == 'true'
     permissions:
       contents: write
+      id-token: write   # train.yml requests it for OIDC to AWS (used only with the AWS variables)
     uses: ./.github/workflows/train.yml
     with:
       n_trials: "30"

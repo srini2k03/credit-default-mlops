@@ -3,3 +3,8 @@
     remote = local
 ['remote "local"']
     url = ../.dvcstore
+# S3 remote (bucket from infra/bootstrap). Not the default: forks and CI without AWS keep using
+# "local". CI with the AWS variables sets the real bucket and the default in .dvc/config.local:
+#   dvc remote modify --local s3 url s3://$DVC_BUCKET/dvc && dvc remote default --local s3
+['remote "s3"']
+    url = s3://REPLACE_WITH_DVC_BUCKET/dvc

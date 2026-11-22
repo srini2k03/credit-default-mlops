@@ -41,14 +41,26 @@ def _resolve_tracking_uri(uri: str) -> str:
     return uri
 
 
+def experiment_artifact_location(tracking_uri: str, location: str | None) -> str | None:
+    """Artifact root for a new experiment.
+
+    A URI (``s3://bucket/mlflow``, ``file:///...``) is used as is, e.g. MLFLOW_ARTIFACT_LOCATION in
+    CI with the AWS variables set. A plain path is resolved against the repo root for a local
+    SQLite store (artifacts next to the db); a tracking server picks its own default otherwise.
+    """
+    if location and "://" in location:
+        return location
+    if location and tracking_uri.startswith("sqlite:"):
+        return (REPO_ROOT / location).resolve().as_uri()
+    return None
+
+
 def setup_tracking(cfg) -> str:
     uri = _resolve_tracking_uri(cfg.registry.tracking_uri)
     mlflow.set_tracking_uri(uri)
     mlflow.set_registry_uri(uri)
     if mlflow.get_experiment_by_name(cfg.registry.experiment) is None:
-        artifact_location = None
-        if uri.startswith("sqlite:"):  # local store: keep artifacts next to the db
-            artifact_location = (REPO_ROOT / cfg.registry.artifact_location).resolve().as_uri()
+        artifact_location = experiment_artifact_location(uri, cfg.registry.artifact_location)
         mlflow.create_experiment(cfg.registry.experiment, artifact_location=artifact_location)
     mlflow.set_experiment(cfg.registry.experiment)
     return uri

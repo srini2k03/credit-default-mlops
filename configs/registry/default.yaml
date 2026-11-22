@@ -1,5 +1,7 @@
 tracking_uri: ${oc.env:MLFLOW_TRACKING_URI,sqlite:///mlruns/mlflow.db}
-artifact_location: mlruns/artifacts
+# a path (relative to the repo root) or a URI such as s3://bucket/mlflow; read when the experiment
+# is first created
+artifact_location: ${oc.env:MLFLOW_ARTIFACT_LOCATION,mlruns/artifacts}
 experiment: credit-default
 model_name: credit-default
 staging_alias: staging
