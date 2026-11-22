@@ -256,6 +256,25 @@ curl -s -X POST 'localhost:8000/explain?top_k=5' -H 'content-type: application/j
 
 Invalid payloads (unknown fields, out-of-domain codes, missing fields) return 422.
 
+#### Cloud readiness
+
+Optional settings for running the container behind a load balancer (all default to today's
+behaviour, so local runs and Render are unchanged):
+
+| Variable | Default | Effect |
+|---|---|---|
+| `LOG_FORMAT` | `text` | `json` writes one JSON object per line to stdout (timestamp, level, logger, message, request fields) for log collectors such as CloudWatch |
+| `LOG_LEVEL` | `INFO` | root log level |
+| `MODEL_SOURCE` | `auto` | `auto`, `s3`, `registry` or `local`; `auto` tries S3 (if `MODEL_S3_URI` is set), then MLflow (if `MLFLOW_TRACKING_URI` is set), then the bundled model |
+| `MODEL_S3_URI` | unset | `s3://bucket/key/model.joblib`; downloaded with boto3 (`pip install -e ".[aws]"`, 5 s timeouts, one retry) using the default AWS credential chain, falling back to the bundled model on any failure |
+| `PREDICTION_LOG_PATH` / `PREDICTION_LOG_ENABLED` | `logs/predictions.sqlite` / `true` | SQLite prediction log; if the path is not writable the service logs one warning and runs without it |
+
+Every response carries an `X-Request-ID` header (the caller's value when it is a safe token,
+otherwise a new id), and each request is logged once with method, path, status, latency and
+request id. `/health` and `/model` report the model source (`s3`, `registry`, `local`) and URI.
+The Docker `api` image also installs boto3 and runs uvicorn with `--proxy-headers` and a 20 s
+graceful-shutdown timeout.
+
 ## CI/CD
 
 | Workflow | Trigger | What it does |
