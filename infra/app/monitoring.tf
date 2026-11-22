@@ -139,6 +139,15 @@ resource "aws_cloudwatch_metric_alarm" "unhealthy_hosts" {
 
 # ---------------------------------------------------------------- stack record for the workflows
 
+# Written early in the apply (depends only on time_static), so even a half-created stack has a
+# creation time for the auto-destroy job.
+resource "aws_ssm_parameter" "created_at" {
+  name        = "/${var.project}/app/created_at"
+  description = "Creation time of the app stack (RFC 3339), read by the auto-destroy job"
+  type        = "String"
+  value       = time_static.created.rfc3339
+}
+
 resource "aws_ssm_parameter" "stack" {
   name        = local.ssm_stack_parameter
   description = "App stack facts for deploy-aws.yml and the auto-destroy job"

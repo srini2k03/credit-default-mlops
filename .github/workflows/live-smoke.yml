@@ -2,6 +2,8 @@ name: live-smoke
 
 # Smoke-tests the deployed API (Render free tier). The first request after idle
 # wakes the service, which can take a minute, so /health is polled first.
+# Optionally also smoke-tests the AWS deployment: pass its ALB URL as aws_url
+# (printed by the aws-infra workflow and `make up`).
 on:
   workflow_dispatch:
     inputs:
@@ -9,6 +11,10 @@ on:
         description: "Deployed API base URL"
         type: string
         default: "https://credit-default-api-fkqg.onrender.com"
+      aws_url:
+        description: "Optional AWS ALB base URL (http://<alb dns name>); empty = skip"
+        type: string
+        default: ""
   schedule:
     - cron: "17 6 * * 1"  # weekly
 
@@ -32,6 +38,21 @@ jobs:
             sleep 10
           done
           echo "::error::$BASE/health did not return 200"; exit 1
+      - name: Smoke test
+        run: bash scripts/smoke_api.sh "$BASE"
+      - name: Model metadata
+        run: curl -fsS "$BASE/model" | tee -a "$GITHUB_STEP_SUMMARY"
+
+  smoke-aws:
+    if: inputs.aws_url != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      BASE: ${{ inputs.aws_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Wait for /health
+        run: bash scripts/aws/wait_healthy.sh "$BASE" 20
       - name: Smoke test
         run: bash scripts/smoke_api.sh "$BASE"
       - name: Model metadata

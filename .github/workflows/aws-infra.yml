@@ -1,0 +1,198 @@
+name: aws-infra
+
+# On-demand AWS app stack (infra/app) with OIDC; no long-lived keys.
+#   up / down : workflow_dispatch, or push a change to .github/aws-infra-request.json
+#               ({"action": "up"} or {"action": "down"}) on any branch
+#   schedule  : every 3 hours, destroy the stack if it has been up longer than
+#               AWS_MAX_UP_HOURS (default 4) unless AWS_KEEP_UP=true. Scheduled runs only fire
+#               on the default branch, so "up" from another branch also starts a timer job.
+# Without the AWS repository variables every job skips with a notice.
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: up or down
+        type: choice
+        options: [up, down]
+        default: up
+  push:
+    paths:
+      - .github/aws-infra-request.json
+  schedule:
+    - cron: "41 */3 * * *"
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  AWS_REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
+  TF_STATE_BUCKET: ${{ vars.TF_STATE_BUCKET }}
+  MLFLOW_ARTIFACT_BUCKET: ${{ vars.MLFLOW_ARTIFACT_BUCKET }}
+  ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}
+  ALARM_EMAIL: ${{ vars.ALARM_EMAIL }}
+  AWS_MAX_UP_HOURS: ${{ vars.AWS_MAX_UP_HOURS || '4' }}
+  AWS_KEEP_UP: ${{ vars.AWS_KEEP_UP || 'false' }}
+  TF_IN_AUTOMATION: "1"
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      action: ${{ steps.action.outputs.action }}
+      run: ${{ steps.vars.outputs.run }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: action
+        name: Decide the action
+        run: |
+          case "${{ github.event_name }}" in
+            schedule)          action=check ;;
+            workflow_dispatch) action="${{ inputs.action }}" ;;
+            push)              action=$(jq -r '.action // empty' .github/aws-infra-request.json 2>/dev/null || true) ;;
+          esac
+          case "$action" in
+            up|down|check) ;;
+            *) echo "::notice::No valid action (expected up or down in .github/aws-infra-request.json); nothing to do."; action=none ;;
+          esac
+          echo "action=$action" | tee -a "$GITHUB_OUTPUT"
+      - id: vars
+        name: Check the AWS repository variables
+        env:
+          AWS_ROLE_ARN: ${{ vars.AWS_ROLE_ARN }}
+          ACTION: ${{ steps.action.outputs.action }}
+        run: |
+          required="AWS_ROLE_ARN TF_STATE_BUCKET MLFLOW_ARTIFACT_BUCKET"
+          [ "$ACTION" = up ] && required="$required ECR_REPOSITORY ALARM_EMAIL"
+          missing=""
+          for v in $required; do [ -n "${!v}" ] || missing="$missing $v"; done
+          if [ "$ACTION" = none ]; then
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          elif [ -n "$missing" ]; then
+            echo "::notice::AWS is not configured (missing repository variables:$missing). Skipping. See docs/aws_setup.md."
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  up:
+    needs: plan
+    if: needs.plan.outputs.run == 'true' && needs.plan.outputs.action == 'up'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    environment: aws
+    concurrency:
+      group: aws-app-stack
+      cancel-in-progress: false
+    outputs:
+      alb_url: ${{ steps.apply.outputs.alb_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.17.2
+          terraform_wrapper: false
+      - uses: aws-actions/amazon-ecr-login@v2
+      - id: image
+        name: Build and push the api image (skipped if this commit is already in ECR)
+        run: echo "image=$(bash scripts/aws/push_image.sh "${GITHUB_SHA}" | tail -1)" >> "$GITHUB_OUTPUT"
+      - name: Seed the production model in S3 if none exists yet
+        run: bash scripts/aws/seed_model.sh
+      - id: apply
+        name: terraform apply
+        env:
+          IMAGE: ${{ steps.image.outputs.image }}
+        run: |
+          bash scripts/aws/app_stack.sh up
+          echo "alb_url=$(terraform -chdir=infra/app output -raw alb_url)" >> "$GITHUB_OUTPUT"
+      - name: Smoke test through the ALB
+        run: |
+          bash scripts/aws/wait_healthy.sh "${{ steps.apply.outputs.alb_url }}"
+          bash scripts/smoke_api.sh "${{ steps.apply.outputs.alb_url }}"
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "### App stack is up"
+            echo "- API: ${{ steps.apply.outputs.alb_url }}/docs"
+            echo "- Image: \`${{ steps.image.outputs.image }}\`"
+            echo "- Auto-destroy after ${AWS_MAX_UP_HOURS} h unless AWS_KEEP_UP=true (now: ${AWS_KEEP_UP})."
+            echo "- Destroy now: push \`{\"action\": \"down\"}\` to .github/aws-infra-request.json, or run this workflow with action=down."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  # Safety net for "up" from a non-default branch, where the scheduled check does not run.
+  timer:
+    needs: [plan, up]
+    if: needs.up.result == 'success' && github.ref_name != github.event.repository.default_branch && vars.AWS_KEEP_UP != 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    environment: aws
+    steps:
+      - uses: actions/checkout@v4
+      - name: Wait (up to 5.5 h, the job limit)
+        run: |
+          minutes=$(( AWS_MAX_UP_HOURS * 60 ))
+          [ "$minutes" -gt 330 ] && minutes=330
+          echo "sleeping ${minutes} min before the age check"
+          sleep $(( minutes * 60 ))
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.17.2
+          terraform_wrapper: false
+      - name: Destroy if older than AWS_MAX_UP_HOURS
+        # at the 5.5 h cap with a longer limit, destroy anyway: nothing else would on a branch
+        run: |
+          if [ "$AWS_MAX_UP_HOURS" -gt 5 ]; then bash scripts/aws/app_stack.sh down; else bash scripts/aws/app_stack.sh check; fi
+
+  down:
+    needs: plan
+    if: needs.plan.outputs.run == 'true' && needs.plan.outputs.action == 'down'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    environment: aws
+    concurrency:
+      group: aws-app-stack
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.17.2
+          terraform_wrapper: false
+      - name: terraform destroy
+        run: bash scripts/aws/app_stack.sh down
+
+  auto-destroy:
+    needs: plan
+    if: needs.plan.outputs.run == 'true' && needs.plan.outputs.action == 'check'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    environment: aws
+    concurrency:
+      group: aws-app-stack
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.17.2
+          terraform_wrapper: false
+      - name: Destroy the stack if it has been up too long
+        run: bash scripts/aws/app_stack.sh check

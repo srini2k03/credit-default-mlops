@@ -151,6 +151,36 @@ deploy the ECR image of the commit.
 with the certificate on the ALB and redirect :80 to :443, then point the domain at the ALB.
 Without a domain the stack stays on HTTP.
 
+## 6. Workflows: up, deploy, down
+
+All AWS workflows use OIDC (`aws-actions/configure-aws-credentials`, `id-token: write`) and skip
+with a `::notice::` and a green check when the repository variables are missing.
+
+| Workflow | Trigger | What it does |
+|---|---|---|
+| `aws-infra.yml` | dispatch (`action=up/down`), or push a change to `.github/aws-infra-request.json` (`{"action": "up"}`) on any branch | **up**: build and push the image of the commit to ECR (skipped if the tag exists), seed `models/production/model.joblib` from `models/bundled/` if S3 has none, `terraform apply`, wait for `/health` through the ALB and run the smoke test. **down**: `terraform destroy` |
+| `aws-infra.yml` (schedule) | every 3 hours | auto-destroy check (below) |
+| `deploy-aws.yml` | after a green `ci` run on main, dispatch, or a change to `.github/aws-deploy-request.json` | if the stack is up: build/push the image, register a task definition with it, update the service and wait until it is stable (circuit breaker rolls back failures), smoke-test `/health` and `/predict` through the ALB. Otherwise a notice |
+| `live-smoke.yml` | weekly, dispatch | smoke-tests Render as before; with the `aws_url` input it also tests the ALB |
+| `infra-ci.yml` | push or PR touching `infra/**` | `terraform fmt`, `validate` of both stacks, checkov; no credentials |
+
+The jobs that touch AWS run in the GitHub environment `aws` (the deploy role trusts it), so
+required reviewers on that environment gate them. `train.yml` runs on main and is trusted by
+branch instead.
+
+### Auto-destroy
+
+`terraform apply` writes the creation time to the SSM parameter `/credit-default/app/created_at`
+(early in the apply, so even a failed apply leaves a record). The scheduled `aws-infra` run reads
+it every 3 hours and destroys the stack once it is older than `AWS_MAX_UP_HOURS` (whole hours,
+default 4), unless `AWS_KEEP_UP=true`. A stack with resources in its state but no record (a
+failed first apply) is destroyed too.
+
+Scheduled workflows only run from the default branch. Until this work is merged to main, an
+`up` started from another branch also starts a `timer` job that sleeps `AWS_MAX_UP_HOURS` (capped
+at 5.5 hours, the job limit) and then runs the same check; with a limit above 5 hours it destroys
+at the cap. Worst case with the defaults: the stack lives about 4-7 hours, roughly $0.30-$0.50.
+
 ## Teardown
 
 Remove everything, including the bootstrap (run in CloudShell from the repository directory):

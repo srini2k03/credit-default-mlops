@@ -1,0 +1,5 @@
+{
+  "action": "down",
+  "note": "Edit action to up or down and push to run the aws-infra workflow on this branch. Skips with a notice until the AWS repository variables exist.",
+  "requested_at": "2026-11-22T00:00:00Z"
+}

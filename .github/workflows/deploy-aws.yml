@@ -1,0 +1,124 @@
+name: deploy-aws
+
+# Build the api image, push it to ECR (tag = commit SHA), deploy it to the ECS service and smoke
+# test the ALB. Runs after a successful ci run on main, on dispatch, or when
+# .github/aws-deploy-request.json changes on any branch. Skips with a notice when the AWS
+# repository variables are missing or the app stack is not up (start it with aws-infra).
+on:
+  workflow_run:
+    workflows: [ci]
+    types: [completed]
+    branches: [main]
+  push:
+    paths:
+      - .github/aws-deploy-request.json
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: deploy-aws
+  cancel-in-progress: false
+
+env:
+  AWS_REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
+  ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}
+  PROJECT: credit-default
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      run: ${{ steps.check.outputs.run }}
+      sha: ${{ steps.check.outputs.sha }}
+    steps:
+      - id: check
+        env:
+          AWS_ROLE_ARN: ${{ vars.AWS_ROLE_ARN }}
+          CI_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          CI_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          sha="${CI_SHA:-$GITHUB_SHA}"
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          missing=""
+          for v in AWS_ROLE_ARN ECR_REPOSITORY; do [ -n "${!v}" ] || missing="$missing $v"; done
+          if [ "${{ github.event_name }}" = workflow_run ] && [ "$CI_CONCLUSION" != success ]; then
+            echo "::notice::ci concluded '$CI_CONCLUSION'; not deploying."
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          elif [ -n "$missing" ]; then
+            echo "::notice::AWS is not configured (missing repository variables:$missing). Skipping. See docs/aws_setup.md."
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  deploy:
+    needs: gate
+    if: needs.gate.outputs.run == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    environment: aws
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.gate.outputs.sha }}
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      - id: stack
+        name: Is the app stack up?
+        run: |
+          if stack=$(aws ssm get-parameter --name "/${PROJECT}/app/stack" --query Parameter.Value --output text 2>/dev/null); then
+            echo "up=true" >> "$GITHUB_OUTPUT"
+            for k in alb_url cluster service task_family container_name; do
+              echo "$k=$(jq -r ".$k" <<<"$stack")" >> "$GITHUB_OUTPUT"
+            done
+          else
+            echo "::notice::The app stack is not up (no /${PROJECT}/app/stack parameter). Start it with the aws-infra workflow; skipping the deploy."
+            echo "up=false" >> "$GITHUB_OUTPUT"
+          fi
+      - if: steps.stack.outputs.up == 'true'
+        uses: aws-actions/amazon-ecr-login@v2
+      - id: image
+        if: steps.stack.outputs.up == 'true'
+        name: Build and push the api image (skipped if this commit is already in ECR)
+        run: echo "image=$(bash scripts/aws/push_image.sh "${{ needs.gate.outputs.sha }}" | tail -1)" >> "$GITHUB_OUTPUT"
+      - name: Current task definition
+        if: steps.stack.outputs.up == 'true'
+        run: |
+          aws ecs describe-task-definition --task-definition "${{ steps.stack.outputs.task_family }}" \
+            --query taskDefinition --output json \
+          | jq 'del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .compatibilities,
+                    .registeredAt, .registeredBy, .deregisteredAt)' > task-definition.json
+      - id: render
+        if: steps.stack.outputs.up == 'true'
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: task-definition.json
+          container-name: ${{ steps.stack.outputs.container_name }}
+          image: ${{ steps.image.outputs.image }}
+      - name: Deploy to ECS and wait for a stable service
+        if: steps.stack.outputs.up == 'true'
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.render.outputs.task-definition }}
+          cluster: ${{ steps.stack.outputs.cluster }}
+          service: ${{ steps.stack.outputs.service }}
+          wait-for-service-stability: true
+          wait-for-minutes: 15
+      - name: Smoke test through the ALB (/health, /predict and the other endpoints)
+        if: steps.stack.outputs.up == 'true'
+        run: |
+          base="${{ steps.stack.outputs.alb_url }}"
+          bash scripts/aws/wait_healthy.sh "$base" 20
+          bash scripts/smoke_api.sh "$base"
+          {
+            echo "### Deployed ${{ needs.gate.outputs.sha }}"
+            echo "- API: $base/docs"
+            echo "- Image: \`${{ steps.image.outputs.image }}\`"
+            echo '```json'; curl -fsS "$base/health"; echo; echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
