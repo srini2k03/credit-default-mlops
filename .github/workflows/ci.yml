@@ -1,8 +1,10 @@
 name: ci
 
 on:
+  # Every branch, so feature branches get the Docker build and container smoke test too.
+  # Pushing to GHCR stays restricted to main (see the last two steps).
   push:
-    branches: [main]
+    branches: ["**"]
   pull_request:
   workflow_dispatch:
 
