@@ -64,9 +64,14 @@ resource "aws_iam_role" "deploy" {
 # mint a more powerful role and pass it to ECS.
 data "aws_iam_policy_document" "app_boundary" {
   statement {
-    sid       = "EcrPull"
-    actions   = ["ecr:GetAuthorizationToken", "ecr:BatchGetImage", "ecr:GetDownloadUrlForLayer", "ecr:BatchCheckLayerAvailability"]
+    sid       = "EcrAuth"
+    actions   = ["ecr:GetAuthorizationToken"]
     resources = ["*"]
+  }
+  statement {
+    sid       = "EcrPull"
+    actions   = ["ecr:BatchGetImage", "ecr:GetDownloadUrlForLayer", "ecr:BatchCheckLayerAvailability"]
+    resources = [aws_ecr_repository.api.arn]
   }
   statement {
     sid       = "Logs"
@@ -89,6 +94,8 @@ resource "aws_iam_policy" "app_boundary" {
 # ---------------------------------------------------------------- deploy role permissions
 
 data "aws_iam_policy_document" "deploy" {
+  # checkov:skip=CKV_AWS_356:EC2/ELB/ECS/autoscaling create calls lack resource-level scoping; they are pinned to one region and IAM is boundary-limited
+  # checkov:skip=CKV_AWS_111:same as above (write access without resource constraints, region-scoped)
   # --- Terraform remote state for the app stack (S3-native locking: the .tflock object)
   statement {
     sid       = "StateList"

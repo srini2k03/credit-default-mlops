@@ -112,6 +112,45 @@ dvc remote modify --local s3 url s3://<DVC_BUCKET>/dvc
 dvc pull -r s3
 ```
 
+## 5. The app stack (on demand)
+
+`infra/app` (state: `s3://<TF_STATE_BUCKET>/app/terraform.tfstate`, S3-native lock file):
+
+- VPC with two public subnets in two AZs, no NAT gateway; the default security group is emptied.
+- Internet-facing ALB on HTTP :80, target group health-checking `/health` every 15 s,
+  20 s deregistration delay (matches uvicorn's graceful shutdown).
+- ECS cluster + Fargate service: 0.5 vCPU / 1 GB, desired 1, autoscaling 1-3 tasks on CPU 60% and
+  ALB requests per target (1000/min), deployment circuit breaker with rollback. Tasks run in the
+  public subnets with a public IP; their security group accepts only the ALB, egress only 443.
+- Task environment: `LOG_FORMAT=json`, `MODEL_SOURCE=s3`,
+  `MODEL_S3_URI=s3://<MLFLOW_ARTIFACT_BUCKET>/models/production/model.joblib`,
+  `PREDICTION_LOG_PATH=/tmp/predictions.sqlite`. If the object is missing the task serves the
+  model baked into the image and says so in its logs and in `/health`.
+- IAM: execution role (pull from ECR, write logs) and task role (`s3:GetObject` on `models/*`
+  only), both with the bootstrap permissions boundary.
+- CloudWatch log group `/ecs/credit-default-api` (7 days) via the awslogs driver; alarms on 5XX
+  count (>= 5 in 5 min), 5XX rate (> 5%), p95 target response time (> 500 ms in 3 of 5 minutes)
+  and unhealthy hosts, all to an SNS topic with an email subscription.
+- An SSM parameter `/credit-default/app/stack` (standard tier, free) with the creation time, ALB
+  URL and service names, read by the deploy and auto-destroy workflows.
+
+The $1 budget lives in the bootstrap stack instead, so it keeps watching while the app is down.
+
+From CloudShell (values default to the bootstrap outputs):
+
+```bash
+make up          # ~5 minutes; prints the API URL
+make infra-plan  # preview changes
+make destroy     # remove the app stack (buckets, ECR and the deploy role stay)
+```
+
+`make up` uses the public GHCR image from `main` unless you pass `IMAGE=...`; the workflows always
+deploy the ECR image of the commit.
+
+**HTTPS** needs a domain name: request an ACM certificate (free) for it, add an HTTPS listener
+with the certificate on the ALB and redirect :80 to :443, then point the domain at the ALB.
+Without a domain the stack stays on HTTP.
+
 ## Teardown
 
 Remove everything, including the bootstrap (run in CloudShell from the repository directory):

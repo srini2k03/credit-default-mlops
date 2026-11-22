@@ -22,6 +22,10 @@ locals {
 resource "aws_s3_bucket" "state" {
   bucket = local.state_bucket
   # Not force_destroy: `make nuke` empties it explicitly before destroying this stack.
+  # checkov:skip=CKV_AWS_18:server access logs need a second bucket; private, single-user demo buckets
+  # checkov:skip=CKV_AWS_144:cross-region replication doubles storage cost; versioning covers mistakes
+  # checkov:skip=CKV_AWS_145:SSE-S3 instead of a customer-managed KMS key ($1/month)
+  # checkov:skip=CKV2_AWS_62:no consumers for bucket event notifications
 }
 
 resource "aws_s3_bucket_versioning" "state" {
@@ -52,11 +56,19 @@ resource "aws_s3_bucket_lifecycle_configuration" "state" {
 resource "aws_s3_bucket" "artifacts" {
   bucket        = local.artifact_bucket
   force_destroy = true
+  # checkov:skip=CKV_AWS_18:server access logs need a second bucket; private, single-user demo buckets
+  # checkov:skip=CKV_AWS_144:cross-region replication doubles storage cost; versioning covers mistakes
+  # checkov:skip=CKV_AWS_145:SSE-S3 instead of a customer-managed KMS key ($1/month)
+  # checkov:skip=CKV2_AWS_62:no consumers for bucket event notifications
 }
 
 resource "aws_s3_bucket" "dvc" {
   bucket        = local.dvc_bucket
   force_destroy = true
+  # checkov:skip=CKV_AWS_18:server access logs need a second bucket; private, single-user demo buckets
+  # checkov:skip=CKV_AWS_144:cross-region replication doubles storage cost; versioning covers mistakes
+  # checkov:skip=CKV_AWS_145:SSE-S3 instead of a customer-managed KMS key ($1/month)
+  # checkov:skip=CKV2_AWS_62:no consumers for bucket event notifications
 }
 
 locals {
@@ -162,8 +174,9 @@ resource "aws_s3_bucket_policy" "tls_only" {
 
 resource "aws_ecr_repository" "api" {
   name                 = "${var.project}-api"
-  image_tag_mutability = "MUTABLE" # deploys push immutable commit-SHA tags; "latest" moves
+  image_tag_mutability = "IMMUTABLE" # one tag per commit SHA; deploys skip the push if it exists
   force_delete         = true
+  # checkov:skip=CKV_AWS_136:AES256 instead of a customer-managed KMS key ($1/month)
 
   image_scanning_configuration {
     scan_on_push = true # basic scanning: free

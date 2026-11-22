@@ -10,7 +10,7 @@ PORT ?= 8000
 .PHONY: help install lint format test data fixtures validate train train-synthetic gate gate-synthetic \
         bootstrap publish serve smoke drift drift-synthetic check-drift flow flow-synthetic \
         loadtest docker-build compose-up compose-down site clean \
-        infra-bootstrap infra-validate
+        infra-bootstrap infra-validate app-init up destroy infra-plan nuke
 
 help:  ## list targets
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  %-18s %s\n",$$1,$$2}'
@@ -112,6 +112,38 @@ infra-bootstrap:  ## one-time AWS bootstrap: state bucket, OIDC deploy role, ECR
 	@# the local state is the source of truth; keep a copy in the state bucket
 	cd $(INFRA_BOOT) && aws s3 cp terraform.tfstate "s3://$$($(TF) output -raw state_bucket)/bootstrap/terraform.tfstate" --only-show-errors
 	@echo; echo "Set these GitHub repository variables:"; cd $(INFRA_BOOT) && $(TF) output -raw gh_variable_commands
+
+# Values default to the bootstrap outputs (its local state lives in CloudShell); export them to override.
+boot_out = $(shell $(TF) -chdir=$(INFRA_BOOT) output -raw $(1) 2>/dev/null)
+AWS_REGION ?= $(or $(call boot_out,region),us-east-1)
+TF_STATE_BUCKET ?= $(call boot_out,state_bucket)
+MLFLOW_ARTIFACT_BUCKET ?= $(call boot_out,mlflow_artifact_bucket)
+ALARM_EMAIL ?= $(call boot_out,alarm_email)
+IMAGE ?=
+APP_VARS = -var "region=$(AWS_REGION)" -var "mlflow_artifact_bucket=$(MLFLOW_ARTIFACT_BUCKET)" \
+           -var "alarm_email=$(ALARM_EMAIL)" $(if $(IMAGE),-var "container_image=$(IMAGE)")
+
+app-init:
+	@test -n "$(TF_STATE_BUCKET)" || { echo "TF_STATE_BUCKET unknown: run make infra-bootstrap or export the bootstrap outputs"; exit 1; }
+	cd $(INFRA_APP) && $(TF) init -input=false -reconfigure \
+	  -backend-config="bucket=$(TF_STATE_BUCKET)" -backend-config="region=$(AWS_REGION)"
+
+up: app-init  ## create the app stack (ALB + Fargate, about 7 cents an hour); IMAGE=... picks the image
+	cd $(INFRA_APP) && $(TF) apply -input=false -auto-approve $(APP_VARS)
+	@cd $(INFRA_APP) && echo "API: $$($(TF) output -raw alb_url)/docs  (run make destroy when done)"
+
+destroy: app-init  ## destroy the app stack (bootstrap, buckets and images stay)
+	cd $(INFRA_APP) && $(TF) destroy -input=false -auto-approve $(APP_VARS)
+
+infra-plan: app-init  ## terraform plan for the app stack
+	cd $(INFRA_APP) && $(TF) plan -input=false $(APP_VARS)
+
+nuke:  ## destroy the app stack, empty the state bucket, then destroy the bootstrap stack
+	@printf "This deletes the app stack, all buckets (state, MLflow, DVC) and ECR images. Type nuke: "; \
+	  read ans; [ "$$ans" = nuke ] || { echo aborted; exit 1; }
+	$(MAKE) destroy
+	bash scripts/aws/empty_bucket.sh "$(TF_STATE_BUCKET)"
+	cd $(INFRA_BOOT) && $(TF) destroy -input=false -auto-approve
 
 infra-validate:  ## terraform fmt check + validate for both stacks (no AWS credentials needed)
 	$(TF) fmt -check -recursive infra

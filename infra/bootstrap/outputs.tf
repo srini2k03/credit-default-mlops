@@ -51,3 +51,8 @@ output "gh_variable_commands" {
     gh variable set ALARM_EMAIL            --repo ${var.github_repository} --body '${var.alarm_email}'
   EOT
 }
+
+output "alarm_email" {
+  description = "Used by `make up` for the app stack's alarm subscription"
+  value       = var.alarm_email
+}

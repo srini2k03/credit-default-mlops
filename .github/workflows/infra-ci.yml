@@ -1,0 +1,52 @@
+name: infra-ci
+
+# Static checks for the Terraform stacks. No AWS credentials: init runs with -backend=false.
+on:
+  push:
+    paths:
+      - infra/**
+      - .github/workflows/infra-ci.yml
+  pull_request:
+    paths:
+      - infra/**
+      - .github/workflows/infra-ci.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: infra-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.17.2
+          terraform_wrapper: false
+      - name: terraform fmt
+        run: terraform fmt -check -recursive -diff infra
+      - name: terraform validate (bootstrap)
+        working-directory: infra/bootstrap
+        run: terraform init -backend=false -input=false && terraform validate
+      - name: terraform validate (app)
+        working-directory: infra/app
+        run: terraform init -backend=false -input=false && terraform validate
+
+  checkov:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install checkov
+        run: pip install "checkov==3.4.6"
+      - name: Static security scan (accepted risks are annotated inline with checkov:skip and a reason)
+        run: checkov -d infra --framework terraform --compact --quiet

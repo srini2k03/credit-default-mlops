@@ -1,0 +1,5 @@
+# Copy to terraform.tfvars for local runs (git-ignored). The workflows pass these as -var flags.
+region                 = "us-east-1"
+mlflow_artifact_bucket = "REPLACE_WITH_BOOTSTRAP_OUTPUT_mlflow_artifact_bucket"
+alarm_email            = "REPLACE_ME@example.com"
+# container_image      = "<account>.dkr.ecr.us-east-1.amazonaws.com/credit-default-api:<sha>"
