@@ -3,17 +3,27 @@
 It feeds monitoring: ``read_log`` returns the logged inputs as a frame that drift checks can
 compare with the training reference. On Render's free tier the disk is ephemeral, so the log
 lives only as long as the instance; docker-compose mounts it on a volume.
+
+On ECS Fargate the log is per task and ephemeral: each task writes its own file on the task's
+scratch storage, and it disappears when the task stops or is replaced. It is a local debugging
+aid there, not a durable record (CloudWatch request logs are the durable trail).
+
+If the log cannot be created (for example the directory is read-only), the logger warns once and
+disables itself, so predictions keep working without it.
 """
 
 from __future__ import annotations
 
 import json
+import logging
 import sqlite3
 import threading
 import time
 from pathlib import Path
 
 import pandas as pd
+
+log = logging.getLogger(__name__)
 
 _SCHEMA = """
 CREATE TABLE IF NOT EXISTS predictions (
@@ -37,10 +47,14 @@ class PredictionLogger:
         self.enabled = enabled
         self._lock = threading.Lock()
         if enabled:
-            self.path.parent.mkdir(parents=True, exist_ok=True)
-            with self._connect() as con:
-                con.execute("PRAGMA journal_mode=WAL")
-                con.execute(_SCHEMA)
+            try:
+                self.path.parent.mkdir(parents=True, exist_ok=True)
+                with self._connect() as con:
+                    con.execute("PRAGMA journal_mode=WAL")
+                    con.execute(_SCHEMA)
+            except (OSError, sqlite3.Error) as exc:
+                log.warning("prediction log disabled: cannot write %s (%s)", self.path, exc)
+                self.enabled = False
 
     def _connect(self):
         return sqlite3.connect(self.path, timeout=5)
