@@ -11,7 +11,10 @@ month, and turns the prediction into an approve/decline decision that minimises 
 for the lender. It covers the full lifecycle: versioned, validated data; tuned and calibrated
 models; a cost-based decision threshold; MLflow tracking and a model registry with a quality
 gate; a FastAPI service with SHAP explanations; load testing; drift monitoring with automated
-retraining; and CI/CD to GHCR, Render and GitHub Pages.
+retraining; and CI/CD to GHCR, Render and GitHub Pages. An on-demand AWS deployment (Terraform,
+ECS Fargate behind an ALB, S3, CloudWatch, GitHub OIDC) and a Kubernetes path (Helm chart, HPA,
+kind load test) are included; the AWS path is written but not applied yet (see
+[AWS deployment](#aws-deployment-on-demand)).
 
 **Data:** [UCI Default of Credit Card Clients](https://archive.ics.uci.edu/dataset/350/default+of+credit+card+clients)
 (Yeh & Lien, 2009; CC BY 4.0). 30,000 Taiwanese card holders, 23 features, 22.1% default rate.
@@ -23,6 +26,7 @@ retraining; and CI/CD to GHCR, Render and GitHub Pages.
 | API (Swagger UI) | https://credit-default-api-fkqg.onrender.com/docs (health: https://credit-default-api-fkqg.onrender.com/health; checked weekly by the `live-smoke` workflow) |
 | Monitoring and results site | https://srini2k03.github.io/credit-default-mlops/ (Evidently drift reports, metrics, gate, load test, MLflow summary and screenshots) |
 | Container image | `ghcr.io/srini2k03/credit-default-mlops:latest` (pushed by `ci.yml` on every push to `main`) |
+| AWS (ECS Fargate) | not running: on demand only, and not applied yet because the AWS account does not exist ([setup](docs/aws_setup.md)) |
 
 Render's free tier sleeps when idle, so the first request after a pause takes about 30-60 s.
 
@@ -116,11 +120,29 @@ flowchart LR
     DRIFT --> CHK{check_drift<br/>share > 0.30?}
     CHK -->|yes| RT[retrain.yml calls train.yml]
   end
+  subgraph Deploy
+    IMG[api image<br/>docker/Dockerfile] --> GHCR[GHCR image]
+    IMG --> RENDER[Render free web service<br/>always on, MODEL_SOURCE=local]
+    IMG --> KIND[kind + Helm chart + HPA<br/>stepped Locust load test in Actions]
+    subgraph AWS["AWS, on demand (Terraform, auto-destroyed)"]
+      ECR[ECR] --> ECS[ECS Fargate<br/>1-3 tasks, JSON logs]
+      ALB[ALB :80] --> ECS
+      S3M[(S3 models/production)] -->|MODEL_SOURCE=s3| ECS
+      ECS --> CW[CloudWatch logs + alarms<br/>SNS email]
+      S3R[(S3 MLflow artifacts<br/>registry db, DVC remote)]
+    end
+  end
+  API --> IMG
+  IMG --> ECR
+  GHA[GitHub Actions] -. OIDC role, no keys .-> AWS
   PROD -. publish .-> BUNDLE
-  API --> RENDER[Render free web service]
-  API --> GHCR[GHCR image]
+  PROD -. publish if AWS configured .-> S3M
+  DVC -. s3 remote if AWS configured .-> S3R
   DRIFT --> PAGES[GitHub Pages]
 ```
+
+Render stays the always-on free deployment. The AWS stack is created on request and destroyed
+automatically after a few hours; the kind cluster lives only for the length of a CI job.
 
 ## How each part works
 
@@ -139,7 +161,7 @@ flowchart LR
 | Registry | The deployable `ModelBundle` (calibrated pipeline + threshold + SHAP background + metadata) is logged as a pyfunc model and registered as `credit-default`. |
 | Quality gate | `python -m credit_default.registry.gate`: re-scores the `@staging` challenger and the `@production` model on the same test holdout, each at its own threshold. Exit 1 if challenger PR-AUC < production − 0.005 or cost > production × 1.01. `tests/test_gate.py` proves a model trained on permuted labels is rejected. |
 | Explainability | SHAP TreeExplainer (trees) or LinearExplainer (LogReg): global bar and beeswarm plots per run; top-k per-request contributions from `/explain` (log-odds of the base model before calibration; isotonic is monotone, so the direction of each contribution carries over). |
-| Serving | FastAPI + Pydantic. Loads `models:/credit-default@production`; if no registry is reachable (5 s timeout, no retries) it falls back to `models/bundled/model.joblib`. Every prediction is appended to a SQLite log. |
+| Serving | FastAPI + Pydantic. Loads the model from S3 (`MODEL_S3_URI`) or `models:/credit-default@production`; if neither is reachable (5 s timeouts) it falls back to `models/bundled/model.joblib`. Every prediction is appended to a SQLite log; optional JSON logs with request ids. |
 | Monitoring | Evidently `DataDriftPreset` HTML reports for a control and a drifted slice (plus prediction drift); `check_drift` exits 1 above a 30% drifted-column share. |
 | Orchestration | Prefect flow `flows/training_flow.py`: ingest → validate → train → evaluate (gate) → register (promote). Runs offline with Prefect's temporary local server. |
 
@@ -195,7 +217,8 @@ on the API's prediction log: `python -m credit_default.monitor.check_drift --sli
   DVC remote: DVC stores content-addressed paths (`files/md5/ab/cdef...`), and release asset
   names cannot contain directories, and assets are not writable through DVC. Because the
   download is checksum-pinned and reproducible, a local remote (`.dvcstore/`, cached between
-  workflow runs keyed on `dvc.lock`) is enough; swapping in S3/GCS is one `dvc remote add`.
+  workflow runs keyed on `dvc.lock`) is enough. An `s3` remote is configured too; `train.yml`
+  switches to it only when the AWS repository variables exist, so forks keep working.
 - **SQLite prediction log.** Zero setup and fine for one instance; on Render's free tier the
   disk is ephemeral, so the log lives only as long as the instance. docker-compose mounts it on
   a volume.
@@ -279,10 +302,124 @@ graceful-shutdown timeout.
 
 | Workflow | Trigger | What it does |
 |---|---|---|
-| `ci.yml` | push, PR | ruff, pytest, synthetic end-to-end smoke (train, gate, drift, Prefect flow), Docker build, container smoke test with curl, a short Locust run, push to GHCR on `main` (`GITHUB_TOKEN`) |
+| `ci.yml` | push to any branch, PR | ruff, pytest, synthetic end-to-end smoke (train, gate, drift, Prefect flow), Docker build, container smoke test with curl, a short Locust run, push to GHCR on `main` (`GITHUB_TOKEN`) |
 | `train.yml` | dispatch, called by `retrain.yml`, push to training code/config | real data via DVC/download → bootstrap `@production` from the committed bundle → Optuna training → quality gate (job fails on reject) → publish `results/`, `models/bundled/`, README table → build the image and run the recorded Locust load test → commit |
 | `retrain.yml` | weekly schedule, dispatch | `check_drift` on a simulated slice; calls `train.yml` if the drift share exceeds the threshold |
 | `pages.yml` | after `train`/`retrain`, push to `results/`, dispatch | real-data Evidently reports, results, MLflow summary, Playwright screenshots of the MLflow UI → `gh-pages` branch via `peaceiris/actions-gh-pages@v4` |
+| `live-smoke.yml` | weekly, dispatch | smoke test of the Render service; optionally of an AWS ALB URL (`aws_url` input) |
+| `infra-ci.yml` | push/PR touching `infra/**` or `deploy/**` | `terraform fmt`/`validate` of both stacks, checkov, `helm lint` and kubeconform; no credentials |
+| `aws-infra.yml` | dispatch, `.github/aws-infra-request.json`, every 3 h | AWS app stack up/down with OIDC; scheduled auto-destroy after `AWS_MAX_UP_HOURS` |
+| `deploy-aws.yml` | after `ci` on main, dispatch, `.github/aws-deploy-request.json` | ECR push, new ECS task definition, wait for a stable service, smoke test through the ALB |
+| `k8s-loadtest.yml` | dispatch, `.github/k8s-loadtest-request.json` | kind cluster, chart with HPA, stepped Locust load, results committed to `results/k8s/` |
+
+`train.yml` additionally uses S3 for DVC, MLflow artifacts, the registry db and the production
+model when the AWS variables are set. Every AWS workflow skips with a notice (and succeeds) when
+they are not.
+
+## AWS deployment (on demand)
+
+**Status: written, validated statically (`terraform validate`, checkov, actionlint), not applied.
+The AWS account does not exist yet**, so nothing has run against AWS and there is no AWS URL.
+Until the repository variables are set, every AWS workflow ends with a notice and a green check.
+
+What the owner runs to apply it ([step-by-step guide](docs/aws_setup.md)):
+
+1. Create the AWS account and an admin user; pick `us-east-1`.
+2. In AWS CloudShell: install Terraform into `~/bin`, clone this repository, copy
+   `infra/bootstrap/terraform.tfvars.example` to `terraform.tfvars` with your email, run
+   `make infra-bootstrap` (state bucket, GitHub OIDC deploy role, ECR, S3 buckets for MLflow and
+   DVC, a $1/month budget).
+3. Set the printed GitHub repository variables (`AWS_ROLE_ARN`, `AWS_REGION`, `TF_STATE_BUCKET`,
+   `ECR_REPOSITORY`, `MLFLOW_ARTIFACT_BUCKET`, `DVC_BUCKET`, `ALARM_EMAIL`) and create the
+   GitHub environment `aws`.
+4. Start the app: run the `aws-infra` workflow with `action=up` (or `make up` in CloudShell). It
+   prints the ALB URL; `/docs` works as on Render.
+
+| Piece | Choice |
+|---|---|
+| Compute | ECS Fargate, 0.5 vCPU / 1 GB, 1-3 tasks (target tracking on CPU 60% and ALB requests per task) |
+| Network | VPC with 2 public subnets in 2 AZs, no NAT gateway; tasks get a public IP but accept traffic only from the ALB |
+| Entry | internet-facing ALB, HTTP :80, health check `/health` (HTTPS needs a domain + ACM certificate) |
+| Model | `MODEL_SOURCE=s3`: `s3://<bucket>/models/production/model.joblib`, published by `train.yml` after a promotion, with the baked-in bundle as fallback |
+| Logs and alarms | JSON logs with request ids to CloudWatch (7 days); alarms on 5XX count and rate, p95 latency > 500 ms, unhealthy hosts → SNS email |
+| CI/CD auth | GitHub OIDC; the deploy role trusts only this repository (main or the `aws` environment) and is scoped to the project's resources; roles it creates must carry a permissions boundary |
+| State | Terraform state in S3 with S3-native locking (no DynamoDB) |
+
+### Cost
+
+Prices for us-east-1 at the time of writing, while the app stack is up:
+
+| Item | Rate | Per hour |
+|---|---|---|
+| Fargate task, 0.5 vCPU / 1 GB | $0.04048 per vCPU-h + $0.004445 per GB-h | about $0.025 |
+| Application Load Balancer | $0.0225/h + LCUs (about $0.008 per LCU-h; a demo uses a fraction of one) | about $0.025-0.03 |
+| Public IPv4 addresses (2 for the ALB, 1 per task) | $0.005 per address-hour | about $0.015 |
+| S3, CloudWatch logs/alarms, SSM, SNS email | storage and requests in the free tier or pennies | < $0.01 |
+| **Total while up** | | **about $0.07/h** |
+| While down | S3 storage of a few MB, ECR images (about $0.10 per GB-month, last 10 kept) | a few cents per month |
+
+An afternoon of use costs well under $2 and is covered by a new account's free credits. Nothing
+runs by default: the stack exists only between `up` and `down`, and the auto-destroy below
+removes forgotten stacks. The $1/month budget emails at 50% and 100%.
+
+Not used, on purpose:
+
+- **EKS**: the control plane alone is $0.10/h, about $73/month, before any node. The Kubernetes
+  path is demonstrated for free on kind instead (next section).
+- **App Runner**: closed to new customers on 2026-04-30.
+- **NAT gateway**: about $0.045/h plus data; public subnets with locked-down security groups
+  avoid it.
+
+### up, destroy and auto-destroy
+
+| Command | Effect |
+|---|---|
+| `aws-infra` workflow `action=up`, `{"action": "up"}` in `.github/aws-infra-request.json`, or `make up` | build/push the image (tag = commit SHA), seed the S3 model if missing, `terraform apply`, smoke test through the ALB |
+| `deploy-aws` workflow (automatic after `ci` on main when the stack is up) | new task definition with the commit's image, rolling deploy with circuit-breaker rollback, smoke test |
+| `aws-infra` `action=down` or `make destroy` | `terraform destroy` of the app stack; bootstrap, buckets and images stay |
+| scheduled `aws-infra` (every 3 h) | destroys the stack once it is older than `AWS_MAX_UP_HOURS` (default 4) unless `AWS_KEEP_UP=true`; the creation time is an SSM parameter written early in the apply |
+| `make nuke` | destroy the app stack, empty the state bucket, destroy the bootstrap: nothing left |
+
+Scheduled workflows only run on the default branch, so an `up` from another branch also starts a
+`timer` job that sleeps for `AWS_MAX_UP_HOURS` (at most 5.5 h) and then runs the same check.
+
+## Kubernetes: Helm chart and HPA load test on kind
+
+`deploy/helm/credit-default` deploys the same image with startup, readiness and liveness probes on
+`/health`, CPU/memory requests and limits, a read-only root filesystem (caches and the prediction
+log go to a `/tmp` emptyDir), a HorizontalPodAutoscaler on CPU and a PodDisruptionBudget.
+`infra-ci.yml` runs `helm lint` and kubeconform on the rendered manifests.
+
+`k8s-loadtest.yml` (trigger: a change to `.github/k8s-loadtest-request.json`, or dispatch) runs on
+a GitHub-hosted runner: kind cluster, metrics-server (`--kubelet-insecure-tls`), the image built
+and loaded into kind, the chart with HPA 1-5 replicas at 50% CPU, then a stepped Locust load with
+the existing user mix (10, 25, 50, 100 and 150 users for 2 minutes each, then 5 minutes of
+cool-down) while `kubectl` samples the HPA and pod counts every 10 s. It commits
+`results/k8s/summary.md`, `loadtest_stats.csv`, `loadtest_history.csv`, `replicas.csv` and
+`loadtest.png` (p50/p95 latency, requests/s and replicas over time). On a laptop:
+`make kind-up kind-loadtest kind-down`.
+
+**Results: not available yet.** The load-test workflow is written but has not run: this branch
+could not be pushed when the workflow was added (see Limitations), and the environment it was
+written in has no Docker daemon. The numbers will be in
+[`results/k8s/summary.md`](results/k8s/) after the first run; none are quoted here until then.
+
+## Limitations
+
+- The AWS path has not been applied: there is no account yet. Terraform is validated and scanned
+  statically and the workflows are linted (and skip cleanly without the variables), but IAM
+  policies and the first `terraform apply` can still surface errors that only AWS reports.
+- HTTP only on AWS: HTTPS needs a domain and an ACM certificate.
+- The kind load test runs the cluster and the load generator on one 4-vCPU runner, so its
+  numbers show scaling behaviour, not the capacity of dedicated nodes.
+- The MLflow registry on AWS is still SQLite, synced to S3 by the single `train.yml` job
+  (serialised by its concurrency group); it is not a multi-writer tracking server. The
+  GitHub Pages MLflow screenshots read the store without AWS credentials, so artifact views of
+  S3-backed runs are not rendered there.
+- The SQLite prediction log is per instance and ephemeral on Render, ECS and Kubernetes; CloudWatch
+  request logs are the durable trail on AWS.
+- Auto-destroy relies on GitHub's scheduler (runs can be delayed) or, for branch runs, on a
+  timer job; `make destroy` remains the reliable way to stop paying immediately.
 
 ## Screenshots
 
@@ -321,6 +458,11 @@ models/bundled/          committed CI-trained model (fallback for serving)
 dvc.yaml, dvc.lock       data versioning
 docker-compose.yml       mlflow + api + reports (+ trainer profile)
 render.yaml              Render blueprint (free web service)
+infra/bootstrap/         Terraform, applied once: state bucket, OIDC deploy role, ECR, S3, budget
+infra/app/               Terraform, on demand: VPC, ALB, ECS Fargate, autoscaling, alarms
+deploy/helm/             Helm chart (probes, HPA, PDB); deploy/kind/ has the kind load-test config
+docs/aws_setup.md        account, CloudShell bootstrap, GitHub variables, teardown
+scripts/aws/, scripts/k8s/  helpers for the AWS workflows and the kind load test
 ```
 
 ## Dataset and licence
