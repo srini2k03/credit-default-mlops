@@ -1,0 +1,1075 @@
+{
+  "at_deployed": {
+    "approval_rate": 0.517,
+    "balanced_accuracy": 0.6887056284309598,
+    "business_cost": 0.5578333333333333,
+    "f1": 0.48804733727810656,
+    "fn": 296,
+    "fnr": 0.22305953278070836,
+    "fp": 1867,
+    "fpr": 0.39952921035737216,
+    "precision": 0.3557625948930297,
+    "recall": 0.7769404672192917,
+    "specificity": 0.6004707896426279,
+    "threshold": 0.16,
+    "tn": 2806,
+    "total_cost": 3346.9999999999995,
+    "tp": 1031
+  },
+  "deployed_threshold": 0.16,
+  "disclaimer": "Educational decision-support analysis on a public 2005 dataset. Costs are stated assumptions in relative units; expected costs are not financial savings, and this is not an approved lending or credit-scoring system.",
+  "policy": {
+    "bayes_threshold": 0.16666666666666666,
+    "fn_cost": 5.0,
+    "fp_cost": 1.0,
+    "min_approval_rate": null,
+    "ratio": 5.0,
+    "threshold": null
+  },
+  "rules": [
+    {
+      "approval_rate": 0.517,
+      "balanced_accuracy": 0.6887056284309598,
+      "business_cost": 0.5578333333333333,
+      "f1": 0.48804733727810656,
+      "fn": 296,
+      "fnr": 0.22305953278070836,
+      "fp": 1867,
+      "fpr": 0.39952921035737216,
+      "precision": 0.3557625948930297,
+      "recall": 0.7769404672192917,
+      "rule": "deployed (cost-optimal on validation)",
+      "specificity": 0.6004707896426279,
+      "threshold": 0.16,
+      "tn": 2806,
+      "total_cost": 3346.9999999999995,
+      "tp": 1031
+    },
+    {
+      "approval_rate": 0.517,
+      "balanced_accuracy": 0.6887056284309598,
+      "business_cost": 0.5578333333333333,
+      "f1": 0.48804733727810656,
+      "fn": 296,
+      "fnr": 0.22305953278070836,
+      "fp": 1867,
+      "fpr": 0.39952921035737216,
+      "precision": 0.3557625948930297,
+      "recall": 0.7769404672192917,
+      "rule": "cost-optimal on validation (re-derived)",
+      "specificity": 0.6004707896426279,
+      "threshold": 0.16,
+      "tn": 2806,
+      "total_cost": 3346.9999999999995,
+      "tp": 1031
+    },
+    {
+      "approval_rate": 0.5398333333333334,
+      "balanced_accuracy": 0.6946561327873846,
+      "business_cost": 0.553,
+      "f1": 0.49559686888454013,
+      "fn": 314,
+      "fnr": 0.23662396382818388,
+      "fp": 1748,
+      "fpr": 0.3740637705970469,
+      "precision": 0.3668960521550163,
+      "recall": 0.7633760361718162,
+      "rule": "Bayes cutoff fp/(fp+fn) on calibrated scores",
+      "specificity": 0.6259362294029531,
+      "threshold": 0.16666666666666666,
+      "tn": 2925,
+      "total_cost": 3318.0000000000005,
+      "tp": 1013
+    },
+    {
+      "approval_rate": 0.8835,
+      "balanced_accuracy": 0.6525887221739599,
+      "business_cost": 0.7523333333333333,
+      "f1": 0.46396841066140176,
+      "fn": 857,
+      "fnr": 0.6458176337603617,
+      "fp": 229,
+      "fpr": 0.04900492189171838,
+      "precision": 0.6723891273247496,
+      "recall": 0.3541823662396383,
+      "rule": "0.5 (default classifier cutoff)",
+      "specificity": 0.9509950781082817,
+      "threshold": 0.5,
+      "tn": 4444,
+      "total_cost": 4514.0,
+      "tp": 470
+    },
+    {
+      "approval_rate": 0.7976666666666666,
+      "balanced_accuracy": 0.6985965005077348,
+      "business_cost": 0.6291666666666667,
+      "f1": 0.534435261707989,
+      "fn": 648,
+      "fnr": 0.4883195177091183,
+      "fp": 535,
+      "fpr": 0.11448748127541195,
+      "precision": 0.5593080724876441,
+      "recall": 0.5116804822908817,
+      "rule": "max F1 on validation",
+      "specificity": 0.885512518724588,
+      "threshold": 0.3339824404760445,
+      "tn": 4138,
+      "total_cost": 3775.0,
+      "tp": 679
+    },
+    {
+      "approval_rate": 0.6821666666666667,
+      "balanced_accuracy": 0.7066909893468403,
+      "business_cost": 0.5746666666666667,
+      "f1": 0.5250463821892394,
+      "fn": 478,
+      "fnr": 0.3602110022607385,
+      "fp": 1058,
+      "fpr": 0.226407019045581,
+      "precision": 0.4452018877818563,
+      "recall": 0.6397889977392615,
+      "rule": "Youden J on validation",
+      "specificity": 0.773592980954419,
+      "threshold": 0.225,
+      "tn": 3615,
+      "total_cost": 3448.0,
+      "tp": 849
+    }
+  ],
+  "sensitivity": [
+    {
+      "approval_rate_optimal": 0.8431666666666666,
+      "bayes_threshold": 0.5,
+      "optimal_threshold": 0.395,
+      "ratio": 1.0,
+      "recall_optimal": 0.43933685003767897,
+      "regret_deployed": 0.17683333333333331,
+      "test_cost_0_5": 0.181,
+      "test_cost_deployed": 0.3605,
+      "test_cost_optimal": 0.18366666666666667
+    },
+    {
+      "approval_rate_optimal": 0.8431666666666666,
+      "bayes_threshold": 0.4,
+      "optimal_threshold": 0.395,
+      "ratio": 1.5,
+      "recall_optimal": 0.43933685003767897,
+      "regret_deployed": 0.13949999999999999,
+      "test_cost_0_5": 0.2524166666666667,
+      "test_cost_deployed": 0.38516666666666666,
+      "test_cost_optimal": 0.24566666666666667
+    },
+    {
+      "approval_rate_optimal": 0.7985,
+      "bayes_threshold": 0.3333333333333333,
+      "optimal_threshold": 0.335,
+      "ratio": 2.0,
+      "recall_optimal": 0.5101733232856066,
+      "regret_deployed": 0.10449999999999998,
+      "test_cost_0_5": 0.3238333333333333,
+      "test_cost_deployed": 0.4098333333333333,
+      "test_cost_optimal": 0.30533333333333335
+    },
+    {
+      "approval_rate_optimal": 0.6821666666666667,
+      "bayes_threshold": 0.25,
+      "optimal_threshold": 0.225,
+      "ratio": 3.0,
+      "recall_optimal": 0.6397889977392615,
+      "regret_deployed": 0.043833333333333335,
+      "test_cost_0_5": 0.4666666666666667,
+      "test_cost_deployed": 0.45916666666666667,
+      "test_cost_optimal": 0.41533333333333333
+    },
+    {
+      "approval_rate_optimal": 0.6821666666666667,
+      "bayes_threshold": 0.2,
+      "optimal_threshold": 0.225,
+      "ratio": 4.0,
+      "recall_optimal": 0.6397889977392615,
+      "regret_deployed": 0.013499999999999956,
+      "test_cost_0_5": 0.6095,
+      "test_cost_deployed": 0.5085,
+      "test_cost_optimal": 0.495
+    },
+    {
+      "approval_rate_optimal": 0.517,
+      "bayes_threshold": 0.16666666666666666,
+      "optimal_threshold": 0.16,
+      "ratio": 5.0,
+      "recall_optimal": 0.7769404672192917,
+      "regret_deployed": 0.0,
+      "test_cost_0_5": 0.7523333333333333,
+      "test_cost_deployed": 0.5578333333333333,
+      "test_cost_optimal": 0.5578333333333333
+    },
+    {
+      "approval_rate_optimal": 0.47983333333333333,
+      "bayes_threshold": 0.14285714285714285,
+      "optimal_threshold": 0.15,
+      "ratio": 6.0,
+      "recall_optimal": 0.8040693293142427,
+      "regret_deployed": 0.004833333333333245,
+      "test_cost_0_5": 0.8951666666666667,
+      "test_cost_deployed": 0.6071666666666666,
+      "test_cost_optimal": 0.6023333333333334
+    },
+    {
+      "approval_rate_optimal": 0.3913333333333333,
+      "bayes_threshold": 0.1111111111111111,
+      "optimal_threshold": 0.125,
+      "ratio": 8.0,
+      "recall_optimal": 0.8613413715146948,
+      "regret_deployed": 0.042333333333333334,
+      "test_cost_0_5": 1.1808333333333334,
+      "test_cost_deployed": 0.7058333333333333,
+      "test_cost_optimal": 0.6635
+    },
+    {
+      "approval_rate_optimal": 0.22433333333333333,
+      "bayes_threshold": 0.09090909090909091,
+      "optimal_threshold": 0.08,
+      "ratio": 10.0,
+      "recall_optimal": 0.9412207987942728,
+      "regret_deployed": 0.10699999999999998,
+      "test_cost_0_5": 1.4665,
+      "test_cost_deployed": 0.8045,
+      "test_cost_optimal": 0.6975
+    },
+    {
+      "approval_rate_optimal": 0.18216666666666667,
+      "bayes_threshold": 0.07692307692307693,
+      "optimal_threshold": 0.07,
+      "ratio": 12.0,
+      "recall_optimal": 0.9570459683496609,
+      "regret_deployed": 0.18300000000000005,
+      "test_cost_0_5": 1.7521666666666667,
+      "test_cost_deployed": 0.9031666666666667,
+      "test_cost_optimal": 0.7201666666666666
+    },
+    {
+      "approval_rate_optimal": 0.1415,
+      "bayes_threshold": 0.0625,
+      "optimal_threshold": 0.06,
+      "ratio": 15.0,
+      "recall_optimal": 0.9683496608892238,
+      "regret_deployed": 0.3018333333333333,
+      "test_cost_0_5": 2.1806666666666668,
+      "test_cost_deployed": 1.0511666666666666,
+      "test_cost_optimal": 0.7493333333333333
+    },
+    {
+      "approval_rate_optimal": 0.05366666666666667,
+      "bayes_threshold": 0.047619047619047616,
+      "optimal_threshold": 0.04,
+      "ratio": 20.0,
+      "recall_optimal": 0.9932177844762623,
+      "regret_deployed": 0.5411666666666667,
+      "test_cost_0_5": 2.894833333333333,
+      "test_cost_deployed": 1.2978333333333334,
+      "test_cost_optimal": 0.7566666666666667
+    }
+  ],
+  "test_curve": [
+    {
+      "approval_rate": 0.0,
+      "cost": 0.77883,
+      "fpr": 1.0,
+      "precision": 0.22117,
+      "recall": 1.0,
+      "threshold": 0.005
+    },
+    {
+      "approval_rate": 0.0,
+      "cost": 0.77883,
+      "fpr": 1.0,
+      "precision": 0.22117,
+      "recall": 1.0,
+      "threshold": 0.015
+    },
+    {
+      "approval_rate": 0.0065,
+      "cost": 0.77433,
+      "fpr": 0.99208,
+      "precision": 0.22228,
+      "recall": 0.99849,
+      "threshold": 0.025
+    },
+    {
+      "approval_rate": 0.03467,
+      "cost": 0.74817,
+      "fpr": 0.95634,
+      "precision": 0.22842,
+      "recall": 0.99699,
+      "threshold": 0.035
+    },
+    {
+      "approval_rate": 0.07783,
+      "cost": 0.72,
+      "fpr": 0.90413,
+      "precision": 0.2364,
+      "recall": 0.98568,
+      "threshold": 0.045
+    },
+    {
+      "approval_rate": 0.1205,
+      "cost": 0.69733,
+      "fpr": 0.85363,
+      "precision": 0.24408,
+      "recall": 0.97061,
+      "threshold": 0.055
+    },
+    {
+      "approval_rate": 0.16167,
+      "cost": 0.66717,
+      "fpr": 0.80312,
+      "precision": 0.25388,
+      "recall": 0.96232,
+      "threshold": 0.065
+    },
+    {
+      "approval_rate": 0.20467,
+      "cost": 0.64017,
+      "fpr": 0.75134,
+      "precision": 0.26425,
+      "recall": 0.95026,
+      "threshold": 0.075
+    },
+    {
+      "approval_rate": 0.24217,
+      "cost": 0.62267,
+      "fpr": 0.70747,
+      "precision": 0.27293,
+      "recall": 0.93519,
+      "threshold": 0.085
+    },
+    {
+      "approval_rate": 0.27617,
+      "cost": 0.60367,
+      "fpr": 0.66702,
+      "precision": 0.28229,
+      "recall": 0.92389,
+      "threshold": 0.095
+    },
+    {
+      "approval_rate": 0.30983,
+      "cost": 0.591,
+      "fpr": 0.62829,
+      "precision": 0.29099,
+      "recall": 0.90806,
+      "threshold": 0.105
+    },
+    {
+      "approval_rate": 0.3515,
+      "cost": 0.57533,
+      "fpr": 0.58036,
+      "precision": 0.30301,
+      "recall": 0.88847,
+      "threshold": 0.115
+    },
+    {
+      "approval_rate": 0.39133,
+      "cost": 0.5715,
+      "fpr": 0.53691,
+      "precision": 0.31298,
+      "recall": 0.86134,
+      "threshold": 0.125
+    },
+    {
+      "approval_rate": 0.421,
+      "cost": 0.56283,
+      "fpr": 0.50332,
+      "precision": 0.32297,
+      "recall": 0.84552,
+      "threshold": 0.135
+    },
+    {
+      "approval_rate": 0.458,
+      "cost": 0.55783,
+      "fpr": 0.46266,
+      "precision": 0.33518,
+      "recall": 0.8214,
+      "threshold": 0.145
+    },
+    {
+      "approval_rate": 0.49933,
+      "cost": 0.5585,
+      "fpr": 0.41857,
+      "precision": 0.34887,
+      "recall": 0.78975,
+      "threshold": 0.155
+    },
+    {
+      "approval_rate": 0.53483,
+      "cost": 0.554,
+      "fpr": 0.37963,
+      "precision": 0.36439,
+      "recall": 0.76639,
+      "threshold": 0.165
+    },
+    {
+      "approval_rate": 0.56517,
+      "cost": 0.56267,
+      "fpr": 0.34903,
+      "precision": 0.37486,
+      "recall": 0.737,
+      "threshold": 0.175
+    },
+    {
+      "approval_rate": 0.59417,
+      "cost": 0.56267,
+      "fpr": 0.318,
+      "precision": 0.38973,
+      "recall": 0.71515,
+      "threshold": 0.185
+    },
+    {
+      "approval_rate": 0.621,
+      "cost": 0.56783,
+      "fpr": 0.29039,
+      "precision": 0.40325,
+      "recall": 0.69103,
+      "threshold": 0.195
+    },
+    {
+      "approval_rate": 0.643,
+      "cost": 0.56883,
+      "fpr": 0.26707,
+      "precision": 0.41737,
+      "recall": 0.6737,
+      "threshold": 0.205
+    },
+    {
+      "approval_rate": 0.66333,
+      "cost": 0.5725,
+      "fpr": 0.24609,
+      "precision": 0.43069,
+      "recall": 0.65561,
+      "threshold": 0.215
+    },
+    {
+      "approval_rate": 0.68217,
+      "cost": 0.57467,
+      "fpr": 0.22641,
+      "precision": 0.4452,
+      "recall": 0.63979,
+      "threshold": 0.225
+    },
+    {
+      "approval_rate": 0.69767,
+      "cost": 0.57417,
+      "fpr": 0.20972,
+      "precision": 0.45976,
+      "recall": 0.62849,
+      "threshold": 0.235
+    },
+    {
+      "approval_rate": 0.71283,
+      "cost": 0.575,
+      "fpr": 0.19367,
+      "precision": 0.47475,
+      "recall": 0.61643,
+      "threshold": 0.245
+    },
+    {
+      "approval_rate": 0.7235,
+      "cost": 0.57533,
+      "fpr": 0.18232,
+      "precision": 0.48644,
+      "recall": 0.60814,
+      "threshold": 0.255
+    },
+    {
+      "approval_rate": 0.73433,
+      "cost": 0.5785,
+      "fpr": 0.17141,
+      "precision": 0.49749,
+      "recall": 0.59759,
+      "threshold": 0.265
+    },
+    {
+      "approval_rate": 0.74683,
+      "cost": 0.581,
+      "fpr": 0.15857,
+      "precision": 0.51218,
+      "recall": 0.58628,
+      "threshold": 0.275
+    },
+    {
+      "approval_rate": 0.75417,
+      "cost": 0.58267,
+      "fpr": 0.15108,
+      "precision": 0.52136,
+      "recall": 0.5795,
+      "threshold": 0.285
+    },
+    {
+      "approval_rate": 0.76283,
+      "cost": 0.59,
+      "fpr": 0.14338,
+      "precision": 0.52916,
+      "recall": 0.56745,
+      "threshold": 0.295
+    },
+    {
+      "approval_rate": 0.77133,
+      "cost": 0.5995,
+      "fpr": 0.13632,
+      "precision": 0.53571,
+      "recall": 0.55388,
+      "threshold": 0.305
+    },
+    {
+      "approval_rate": 0.78117,
+      "cost": 0.60567,
+      "fpr": 0.12711,
+      "precision": 0.5476,
+      "recall": 0.54182,
+      "threshold": 0.315
+    },
+    {
+      "approval_rate": 0.79267,
+      "cost": 0.61917,
+      "fpr": 0.1177,
+      "precision": 0.55788,
+      "recall": 0.52298,
+      "threshold": 0.325
+    },
+    {
+      "approval_rate": 0.7985,
+      "cost": 0.63033,
+      "fpr": 0.11385,
+      "precision": 0.55997,
+      "recall": 0.51017,
+      "threshold": 0.335
+    },
+    {
+      "approval_rate": 0.80583,
+      "cost": 0.639,
+      "fpr": 0.10785,
+      "precision": 0.56738,
+      "recall": 0.49812,
+      "threshold": 0.345
+    },
+    {
+      "approval_rate": 0.81117,
+      "cost": 0.64567,
+      "fpr": 0.10357,
+      "precision": 0.57282,
+      "recall": 0.48907,
+      "threshold": 0.355
+    },
+    {
+      "approval_rate": 0.81783,
+      "cost": 0.658,
+      "fpr": 0.09908,
+      "precision": 0.5764,
+      "recall": 0.47476,
+      "threshold": 0.365
+    },
+    {
+      "approval_rate": 0.82533,
+      "cost": 0.6625,
+      "fpr": 0.09202,
+      "precision": 0.58969,
+      "recall": 0.46571,
+      "threshold": 0.375
+    },
+    {
+      "approval_rate": 0.83483,
+      "cost": 0.672,
+      "fpr": 0.08389,
+      "precision": 0.60444,
+      "recall": 0.45139,
+      "threshold": 0.385
+    },
+    {
+      "approval_rate": 0.84317,
+      "cost": 0.67967,
+      "fpr": 0.07661,
+      "precision": 0.61955,
+      "recall": 0.43934,
+      "threshold": 0.395
+    },
+    {
+      "approval_rate": 0.84767,
+      "cost": 0.68517,
+      "fpr": 0.07297,
+      "precision": 0.62691,
+      "recall": 0.4318,
+      "threshold": 0.405
+    },
+    {
+      "approval_rate": 0.853,
+      "cost": 0.69483,
+      "fpr": 0.06933,
+      "precision": 0.63265,
+      "recall": 0.4205,
+      "threshold": 0.415
+    },
+    {
+      "approval_rate": 0.85817,
+      "cost": 0.70767,
+      "fpr": 0.06655,
+      "precision": 0.63455,
+      "recall": 0.40693,
+      "threshold": 0.425
+    },
+    {
+      "approval_rate": 0.8625,
+      "cost": 0.71733,
+      "fpr": 0.06398,
+      "precision": 0.63758,
+      "recall": 0.39638,
+      "threshold": 0.435
+    },
+    {
+      "approval_rate": 0.86733,
+      "cost": 0.7235,
+      "fpr": 0.06013,
+      "precision": 0.64698,
+      "recall": 0.38809,
+      "threshold": 0.445
+    },
+    {
+      "approval_rate": 0.87083,
+      "cost": 0.728,
+      "fpr": 0.05735,
+      "precision": 0.65419,
+      "recall": 0.38206,
+      "threshold": 0.455
+    },
+    {
+      "approval_rate": 0.87383,
+      "cost": 0.733,
+      "fpr": 0.05521,
+      "precision": 0.65918,
+      "recall": 0.37604,
+      "threshold": 0.465
+    },
+    {
+      "approval_rate": 0.8765,
+      "cost": 0.73633,
+      "fpr": 0.05307,
+      "precision": 0.66532,
+      "recall": 0.37151,
+      "threshold": 0.475
+    },
+    {
+      "approval_rate": 0.87967,
+      "cost": 0.74517,
+      "fpr": 0.05157,
+      "precision": 0.6662,
+      "recall": 0.36247,
+      "threshold": 0.485
+    },
+    {
+      "approval_rate": 0.88233,
+      "cost": 0.7485,
+      "fpr": 0.04943,
+      "precision": 0.6728,
+      "recall": 0.35795,
+      "threshold": 0.495
+    },
+    {
+      "approval_rate": 0.88567,
+      "cost": 0.75417,
+      "fpr": 0.04708,
+      "precision": 0.6793,
+      "recall": 0.35117,
+      "threshold": 0.505
+    },
+    {
+      "approval_rate": 0.88767,
+      "cost": 0.75817,
+      "fpr": 0.04579,
+      "precision": 0.68249,
+      "recall": 0.34665,
+      "threshold": 0.515
+    },
+    {
+      "approval_rate": 0.89017,
+      "cost": 0.76267,
+      "fpr": 0.04408,
+      "precision": 0.68741,
+      "recall": 0.34137,
+      "threshold": 0.525
+    },
+    {
+      "approval_rate": 0.892,
+      "cost": 0.76883,
+      "fpr": 0.04344,
+      "precision": 0.68673,
+      "recall": 0.33534,
+      "threshold": 0.535
+    },
+    {
+      "approval_rate": 0.89533,
+      "cost": 0.7755,
+      "fpr": 0.0413,
+      "precision": 0.69268,
+      "recall": 0.32781,
+      "threshold": 0.545
+    },
+    {
+      "approval_rate": 0.8975,
+      "cost": 0.78033,
+      "fpr": 0.04002,
+      "precision": 0.69593,
+      "recall": 0.32253,
+      "threshold": 0.555
+    },
+    {
+      "approval_rate": 0.89867,
+      "cost": 0.78217,
+      "fpr": 0.03916,
+      "precision": 0.69901,
+      "recall": 0.32027,
+      "threshold": 0.565
+    },
+    {
+      "approval_rate": 0.89983,
+      "cost": 0.783,
+      "fpr": 0.03809,
+      "precision": 0.70383,
+      "recall": 0.31876,
+      "threshold": 0.575
+    },
+    {
+      "approval_rate": 0.9005,
+      "cost": 0.78433,
+      "fpr": 0.03766,
+      "precision": 0.70519,
+      "recall": 0.31726,
+      "threshold": 0.585
+    },
+    {
+      "approval_rate": 0.90183,
+      "cost": 0.788,
+      "fpr": 0.03702,
+      "precision": 0.70628,
+      "recall": 0.31349,
+      "threshold": 0.595
+    },
+    {
+      "approval_rate": 0.90283,
+      "cost": 0.791,
+      "fpr": 0.03659,
+      "precision": 0.70669,
+      "recall": 0.31047,
+      "threshold": 0.605
+    },
+    {
+      "approval_rate": 0.90433,
+      "cost": 0.7945,
+      "fpr": 0.03574,
+      "precision": 0.70906,
+      "recall": 0.30671,
+      "threshold": 0.615
+    },
+    {
+      "approval_rate": 0.90633,
+      "cost": 0.7995,
+      "fpr": 0.03467,
+      "precision": 0.71174,
+      "recall": 0.30143,
+      "threshold": 0.625
+    },
+    {
+      "approval_rate": 0.91133,
+      "cost": 0.8125,
+      "fpr": 0.0321,
+      "precision": 0.71805,
+      "recall": 0.28787,
+      "threshold": 0.635
+    },
+    {
+      "approval_rate": 0.9165,
+      "cost": 0.82933,
+      "fpr": 0.03017,
+      "precision": 0.71856,
+      "recall": 0.27129,
+      "threshold": 0.645
+    },
+    {
+      "approval_rate": 0.92467,
+      "cost": 0.85017,
+      "fpr": 0.02589,
+      "precision": 0.7323,
+      "recall": 0.24943,
+      "threshold": 0.655
+    },
+    {
+      "approval_rate": 0.933,
+      "cost": 0.87583,
+      "fpr": 0.02247,
+      "precision": 0.73881,
+      "recall": 0.22381,
+      "threshold": 0.665
+    },
+    {
+      "approval_rate": 0.93967,
+      "cost": 0.89117,
+      "fpr": 0.01862,
+      "precision": 0.75967,
+      "recall": 0.20723,
+      "threshold": 0.675
+    },
+    {
+      "approval_rate": 0.9475,
+      "cost": 0.92033,
+      "fpr": 0.01648,
+      "precision": 0.75556,
+      "recall": 0.17935,
+      "threshold": 0.685
+    },
+    {
+      "approval_rate": 0.9535,
+      "cost": 0.94033,
+      "fpr": 0.01434,
+      "precision": 0.75986,
+      "recall": 0.15976,
+      "threshold": 0.695
+    },
+    {
+      "approval_rate": 0.95867,
+      "cost": 0.95617,
+      "fpr": 0.0122,
+      "precision": 0.77016,
+      "recall": 0.14393,
+      "threshold": 0.705
+    },
+    {
+      "approval_rate": 0.9635,
+      "cost": 0.96933,
+      "fpr": 0.00984,
+      "precision": 0.78995,
+      "recall": 0.13037,
+      "threshold": 0.715
+    },
+    {
+      "approval_rate": 0.96967,
+      "cost": 0.98817,
+      "fpr": 0.00728,
+      "precision": 0.81319,
+      "recall": 0.11153,
+      "threshold": 0.725
+    },
+    {
+      "approval_rate": 0.9765,
+      "cost": 1.01233,
+      "fpr": 0.00514,
+      "precision": 0.82979,
+      "recall": 0.08817,
+      "threshold": 0.735
+    },
+    {
+      "approval_rate": 0.9835,
+      "cost": 1.03733,
+      "fpr": 0.003,
+      "precision": 0.85859,
+      "recall": 0.06405,
+      "threshold": 0.745
+    },
+    {
+      "approval_rate": 0.99017,
+      "cost": 1.06467,
+      "fpr": 0.00171,
+      "precision": 0.86441,
+      "recall": 0.03843,
+      "threshold": 0.755
+    },
+    {
+      "approval_rate": 0.9945,
+      "cost": 1.08133,
+      "fpr": 0.00064,
+      "precision": 0.90909,
+      "recall": 0.02261,
+      "threshold": 0.765
+    },
+    {
+      "approval_rate": 0.9985,
+      "cost": 1.09933,
+      "fpr": 0.00021,
+      "precision": 0.88889,
+      "recall": 0.00603,
+      "threshold": 0.775
+    },
+    {
+      "approval_rate": 1.0,
+      "cost": 1.10583,
+      "fpr": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "threshold": 0.785
+    },
+    {
+      "approval_rate": 1.0,
+      "cost": 1.10583,
+      "fpr": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "threshold": 0.795
+    },
+    {
+      "approval_rate": 1.0,
+      "cost": 1.10583,
+      "fpr": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "threshold": 0.805
+    },
+    {
+      "approval_rate": 1.0,
+      "cost": 1.10583,
+      "fpr": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "threshold": 0.815
+    },
+    {
+      "approval_rate": 1.0,
+      "cost": 1.10583,
+      "fpr": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "threshold": 0.825
+    },
+    {
+      "approval_rate": 1.0,
+      "cost": 1.10583,
+      "fpr": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "threshold": 0.835
+    },
+    {
+      "approval_rate": 1.0,
+      "cost": 1.10583,
+      "fpr": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "threshold": 0.845
+    },
+    {
+      "approval_rate": 1.0,
+      "cost": 1.10583,
+      "fpr": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "threshold": 0.855
+    },
+    {
+      "approval_rate": 1.0,
+      "cost": 1.10583,
+      "fpr": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "threshold": 0.865
+    },
+    {
+      "approval_rate": 1.0,
+      "cost": 1.10583,
+      "fpr": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "threshold": 0.875
+    },
+    {
+      "approval_rate": 1.0,
+      "cost": 1.10583,
+      "fpr": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "threshold": 0.885
+    },
+    {
+      "approval_rate": 1.0,
+      "cost": 1.10583,
+      "fpr": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "threshold": 0.895
+    },
+    {
+      "approval_rate": 1.0,
+      "cost": 1.10583,
+      "fpr": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "threshold": 0.905
+    },
+    {
+      "approval_rate": 1.0,
+      "cost": 1.10583,
+      "fpr": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "threshold": 0.915
+    },
+    {
+      "approval_rate": 1.0,
+      "cost": 1.10583,
+      "fpr": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "threshold": 0.925
+    },
+    {
+      "approval_rate": 1.0,
+      "cost": 1.10583,
+      "fpr": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "threshold": 0.935
+    },
+    {
+      "approval_rate": 1.0,
+      "cost": 1.10583,
+      "fpr": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "threshold": 0.945
+    },
+    {
+      "approval_rate": 1.0,
+      "cost": 1.10583,
+      "fpr": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "threshold": 0.955
+    },
+    {
+      "approval_rate": 1.0,
+      "cost": 1.10583,
+      "fpr": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "threshold": 0.965
+    },
+    {
+      "approval_rate": 1.0,
+      "cost": 1.10583,
+      "fpr": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "threshold": 0.975
+    },
+    {
+      "approval_rate": 1.0,
+      "cost": 1.10583,
+      "fpr": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "threshold": 0.985
+    },
+    {
+      "approval_rate": 1.0,
+      "cost": 1.10583,
+      "fpr": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "threshold": 0.995
+    }
+  ]
+}

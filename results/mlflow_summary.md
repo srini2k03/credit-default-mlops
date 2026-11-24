@@ -4,13 +4,17 @@ Experiment `credit-default`, exported after the training run.
 
 | runName | status | start_time | test_pr_auc | test_roc_auc | test_business_cost | test_brier | cv_pr_auc | champion | data_source |
 |---|---|---|---|---|---|---|---|---|---|
-| xgboost | FINISHED | 2026-11-03 13:39:18.829000+00:00 | 0.5351 | 0.7799 | 0.5682 | 0.1358 | 0.5683 |  |  |
-| lightgbm | FINISHED | 2026-11-03 13:38:37.428000+00:00 | 0.5362 | 0.7781 | 0.5625 | 0.1353 | 0.5640 |  |  |
-| logreg | FINISHED | 2026-11-03 13:38:29.192000+00:00 | 0.4782 | 0.7403 | 0.6012 | 0.1431 | 0.5133 |  |  |
-| train-uci-2026-11-03T13:38:29Z | FINISHED | 2026-11-03 13:38:29.163000+00:00 | 0.5362 | 0.7781 | 0.5625 | 0.1353 |  | lightgbm | uci |
+| catboost | FINISHED | 2026-11-24 10:21:18.882000+00:00 | 0.5631 | 0.7823 | 0.5593 | 0.1352 | 0.5658 |  |  |
+| xgboost | FINISHED | 2026-11-24 10:20:39.623000+00:00 | 0.5549 | 0.7797 | 0.5685 | 0.1357 | 0.5679 |  |  |
+| lightgbm | FINISHED | 2026-11-24 10:19:41.809000+00:00 | 0.5594 | 0.7807 | 0.5578 | 0.1346 | 0.5647 |  |  |
+| random_forest | FINISHED | 2026-11-24 10:10:52.822000+00:00 | 0.5551 | 0.7788 | 0.5617 | 0.1357 | 0.5668 |  |  |
+| logreg | FINISHED | 2026-11-24 10:10:43.424000+00:00 | 0.4739 | 0.7331 | 0.6198 | 0.1435 | 0.5123 |  |  |
+| train-uci-2026-11-24T10:10:43Z | FINISHED | 2026-11-24 10:10:43.397000+00:00 | 0.5594 | 0.7807 | 0.5578 | 0.1346 |  | lightgbm | uci |
+| bootstrap-production | FINISHED | 2026-11-24 10:10:36.670000+00:00 |  |  |  |  |  |  |  |
 
 ## Registered versions
 
 | Version | Aliases | Run |
 |---|---|---|
-| 1 | production, staging | `b8bfce8214cc4d2bbc9cc79fe1f74d0b` |
+| 1 | previous-production | `d4e36e733dcd4674b565a533e8ff4fd9` |
+| 2 | production, staging | `b92962b32072458c89ab9d81948b0363` |

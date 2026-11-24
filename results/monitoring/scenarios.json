@@ -1,0 +1,2239 @@
+{
+  "baseline_test": {
+    "brier": 0.13459576317553015,
+    "business_cost": 0.5578333333333333,
+    "pr_auc": 0.5594440755548019,
+    "recall": 0.7769404672192917,
+    "roc_auc": 0.7807051394831634
+  },
+  "generated_at": "2026-11-24T10:28:22Z",
+  "git_commit": "48a6a54a17e06fc3d9ac328effbccd87ef4e98c5",
+  "model": {
+    "family": "lightgbm",
+    "generated_at": "2026-11-24T10:28:04Z",
+    "git_commit": "48a6a54a17e06fc3d9ac328effbccd87ef4e98c5",
+    "threshold": 0.16
+  },
+  "policy": {
+    "allow_unseen_categories": false,
+    "feature_drift_share": 0.3,
+    "max_calibration_gap": 0.05,
+    "max_cost_regret": 0.05,
+    "max_missing_rate": 0.02,
+    "max_roc_auc_drop": 0.03,
+    "min_labelled_rows": 1000,
+    "p_value": 0.01,
+    "prediction_psi": 0.2,
+    "psi_major": 0.2,
+    "psi_moderate": 0.1
+  },
+  "reference": {
+    "n": 18000,
+    "n_prediction_reference": 3000,
+    "prediction_reference": "validation split scores",
+    "split": "train"
+  },
+  "scenarios": [
+    {
+      "data_quality": {
+        "columns_with_missing": {},
+        "max_missing_rate": 0.0,
+        "pay_status_out_of_range": 0,
+        "unseen_categories": {},
+        "unseen_category_rows": 0
+      },
+      "decision": {
+        "action": "none",
+        "feature_drift_share": 0.0,
+        "reasons": []
+      },
+      "description": "Untouched random sample of the test split.",
+      "feature_drift": [
+        {
+          "drifted": false,
+          "effect": 0.015666666666666607,
+          "feature": "LIMIT_BAL",
+          "p_value": 0.5479848956366029,
+          "psi": 0.004329283095726255,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.015666666666666607,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.011185981996469233,
+          "feature": "SEX",
+          "p_value": 0.10501703951401328,
+          "psi": 0.001042591033254866,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 2.62765005773201,
+          "test": "chi-square"
+        },
+        {
+          "drifted": false,
+          "effect": 0.009685850247768578,
+          "feature": "EDUCATION",
+          "p_value": 0.9224251632949633,
+          "psi": 0.0008964918731716868,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 1.9701295954661708,
+          "test": "chi-square"
+        },
+        {
+          "drifted": false,
+          "effect": 0.003526106639279045,
+          "feature": "MARRIAGE",
+          "p_value": 0.9671700464313749,
+          "psi": 0.00010101114516794841,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.26110198866292295,
+          "test": "chi-square"
+        },
+        {
+          "drifted": false,
+          "effect": 0.020777777777777784,
+          "feature": "AGE",
+          "p_value": 0.2139873838083054,
+          "psi": 0.00547930063514782,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.020777777777777784,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.022792040440061154,
+          "feature": "PAY_0",
+          "p_value": 0.3646500826517777,
+          "psi": 0.00410739306386098,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 10.909019255849044,
+          "test": "chi-square"
+        },
+        {
+          "drifted": false,
+          "effect": 0.015770940476212816,
+          "feature": "PAY_2",
+          "p_value": 0.8757797449969953,
+          "psi": 0.0022223860587549677,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 5.223173833589201,
+          "test": "chi-square"
+        },
+        {
+          "drifted": false,
+          "effect": 0.014383649779083303,
+          "feature": "PAY_3",
+          "p_value": 0.9304614060444047,
+          "psi": 0.0017477908177499987,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 4.344677000313786,
+          "test": "chi-square"
+        },
+        {
+          "drifted": false,
+          "effect": 0.016101397878742027,
+          "feature": "PAY_4",
+          "p_value": 0.859589946650743,
+          "psi": 0.0014845686143014532,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 5.444355286640723,
+          "test": "chi-square"
+        },
+        {
+          "drifted": false,
+          "effect": 0.01672974338333073,
+          "feature": "PAY_5",
+          "p_value": 0.7521062971853134,
+          "psi": 0.002129053934333954,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 5.877570587114066,
+          "test": "chi-square"
+        },
+        {
+          "drifted": false,
+          "effect": 0.02459210729050208,
+          "feature": "PAY_6",
+          "p_value": 0.17664736969599426,
+          "psi": 0.004008214694086822,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 12.700206560738875,
+          "test": "chi-square"
+        },
+        {
+          "drifted": false,
+          "effect": 0.012222222222222245,
+          "feature": "BILL_AMT1",
+          "p_value": 0.8324780386126353,
+          "psi": 0.0024565160648148295,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.012222222222222245,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.01572222222222222,
+          "feature": "BILL_AMT2",
+          "p_value": 0.5433967302754725,
+          "psi": 0.0018746706030187276,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.01572222222222222,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.012944444444444536,
+          "feature": "BILL_AMT3",
+          "p_value": 0.7769958241201352,
+          "psi": 0.0036814681753229977,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.012944444444444536,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.011999999999999955,
+          "feature": "BILL_AMT4",
+          "p_value": 0.8484114211389664,
+          "psi": 0.007614544378422759,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.011999999999999955,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.009444444444444366,
+          "feature": "BILL_AMT5",
+          "p_value": 0.9742475486348426,
+          "psi": 0.001750070091945314,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.009444444444444366,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.013222222222222219,
+          "feature": "BILL_AMT6",
+          "p_value": 0.7544749298244916,
+          "psi": 0.002320593763924353,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.013222222222222219,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.011222222222222217,
+          "feature": "PAY_AMT1",
+          "p_value": 0.8987398483110496,
+          "psi": 0.0025012085182252383,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.011222222222222217,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.017833333333333257,
+          "feature": "PAY_AMT2",
+          "p_value": 0.3824434612207669,
+          "psi": 0.0035535621031683225,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.017833333333333257,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.01244444444444437,
+          "feature": "PAY_AMT3",
+          "p_value": 0.8159620763127404,
+          "psi": 0.004101524866751058,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.01244444444444437,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.016833333333333256,
+          "feature": "PAY_AMT4",
+          "p_value": 0.45504470846864753,
+          "psi": 0.002176381252558095,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.016833333333333256,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.016888888888888842,
+          "feature": "PAY_AMT5",
+          "p_value": 0.45082437146884347,
+          "psi": 0.004230786120914005,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.016888888888888842,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.015611111111111131,
+          "feature": "PAY_AMT6",
+          "p_value": 0.5525863130293205,
+          "psi": 0.001842449590201421,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.015611111111111131,
+          "test": "KS"
+        }
+      ],
+      "label_free_decision": {
+        "action": "none",
+        "feature_drift_share": 0.0,
+        "reasons": []
+      },
+      "labels": {
+        "n": 3000,
+        "p_value": 0.3142082248048518,
+        "rate": 0.213,
+        "reference_rate": 0.2212222222222222,
+        "z": -1.006431130811097
+      },
+      "n": 3000,
+      "n_drifted_features": 0,
+      "n_significant_features": 0,
+      "performance": {
+        "batch_optimal_threshold": 0.17,
+        "brier": 0.13329122577979186,
+        "business_cost": 0.551,
+        "calibration_gap": 0.009995405689212561,
+        "cost_regret": 0.014732965009208066,
+        "ece": 0.022478746258171603,
+        "pr_auc": 0.5395763541945098,
+        "recall": 0.7824726134585289,
+        "roc_auc": 0.776900188840701,
+        "roc_auc_drop": 0.0038049506424624457
+      },
+      "prediction_drift": {
+        "decline_rate_current": 0.486,
+        "decline_rate_reference": 0.4723333333333333,
+        "ks": 0.032333333333333325,
+        "ks_p_value": 0.08687444491098466,
+        "mean_current": 0.22299540568921256,
+        "mean_reference": 0.21880712847206485,
+        "psi": 0.005265359393620174
+      },
+      "scenario": "control",
+      "scored": "as received"
+    },
+    {
+      "data_quality": {
+        "columns_with_missing": {},
+        "max_missing_rate": 0.0,
+        "pay_status_out_of_range": 0,
+        "unseen_categories": {},
+        "unseen_category_rows": 0
+      },
+      "decision": {
+        "action": "monitor",
+        "feature_drift_share": 0.13043478260869565,
+        "reasons": [
+          "prediction PSI 0.223 >= 0.2",
+          "labelled performance within limits: the model handles this shift"
+        ]
+      },
+      "description": "Credit limits x0.7, ages -6 years, PAY_0 one month worse for 35% of rows, bill amounts x1.25.",
+      "feature_drift": [
+        {
+          "drifted": true,
+          "effect": 0.17188888888888887,
+          "feature": "LIMIT_BAL",
+          "p_value": 6.862346546879871e-67,
+          "psi": 0.4512924914184191,
+          "psi_band": "major",
+          "significant": true,
+          "statistic": 0.17188888888888887,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.008565276503404407,
+          "feature": "SEX",
+          "p_value": 0.21452209253844387,
+          "psi": 0.0006165204919720704,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 1.540643193175204,
+          "test": "chi-square"
+        },
+        {
+          "drifted": false,
+          "effect": 0.02312177300631742,
+          "feature": "EDUCATION",
+          "p_value": 0.08161063401058247,
+          "psi": 0.00540646643732645,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 11.226944126069046,
+          "test": "chi-square"
+        },
+        {
+          "drifted": false,
+          "effect": 0.013657419486026542,
+          "feature": "MARRIAGE",
+          "p_value": 0.270564200204482,
+          "psi": 0.0017387156716240403,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 3.9170272473632473,
+          "test": "chi-square"
+        },
+        {
+          "drifted": true,
+          "effect": 0.26816666666666666,
+          "feature": "AGE",
+          "p_value": 9.402788850578571e-164,
+          "psi": 0.5040957565095284,
+          "psi_band": "major",
+          "significant": true,
+          "statistic": 0.26816666666666666,
+          "test": "KS"
+        },
+        {
+          "drifted": true,
+          "effect": 0.2479872900250524,
+          "feature": "PAY_0",
+          "p_value": 2.6762117264704263e-271,
+          "psi": 0.40400803479865327,
+          "psi_band": "major",
+          "significant": true,
+          "statistic": 1291.4516162933585,
+          "test": "chi-square"
+        },
+        {
+          "drifted": false,
+          "effect": 0.011405534096548991,
+          "feature": "PAY_2",
+          "p_value": 0.9870502573672911,
+          "psi": 0.000992194196901547,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 2.731810368578374,
+          "test": "chi-square"
+        },
+        {
+          "drifted": false,
+          "effect": 0.012040978301163054,
+          "feature": "PAY_3",
+          "p_value": 0.980352733118187,
+          "psi": 0.0009868365218139072,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 3.0446883274306695,
+          "test": "chi-square"
+        },
+        {
+          "drifted": false,
+          "effect": 0.01504859298627478,
+          "feature": "PAY_4",
+          "p_value": 0.9068909176151417,
+          "psi": 0.0016702592656961863,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 4.755663168197729,
+          "test": "chi-square"
+        },
+        {
+          "drifted": false,
+          "effect": 0.01633649427339577,
+          "feature": "PAY_5",
+          "p_value": 0.7787553249811432,
+          "psi": 0.0019908508777315057,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 5.604501948038549,
+          "test": "chi-square"
+        },
+        {
+          "drifted": false,
+          "effect": 0.024632375345287248,
+          "feature": "PAY_6",
+          "p_value": 0.17464024100833642,
+          "psi": 0.004492066909743226,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 12.741832218173416,
+          "test": "chi-square"
+        },
+        {
+          "drifted": false,
+          "effect": 0.08305555555555555,
+          "feature": "BILL_AMT1",
+          "p_value": 7.076977772314278e-16,
+          "psi": 0.04492195170619939,
+          "psi_band": "stable",
+          "significant": true,
+          "statistic": 0.08305555555555555,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.07866666666666677,
+          "feature": "BILL_AMT2",
+          "p_value": 2.758441928092946e-14,
+          "psi": 0.04211481095632284,
+          "psi_band": "stable",
+          "significant": true,
+          "statistic": 0.07866666666666677,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.0760555555555556,
+          "feature": "BILL_AMT3",
+          "p_value": 2.2178906441241153e-13,
+          "psi": 0.03429397834855965,
+          "psi_band": "stable",
+          "significant": true,
+          "statistic": 0.0760555555555556,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.07605555555555565,
+          "feature": "BILL_AMT4",
+          "p_value": 2.2178906441240186e-13,
+          "psi": 0.028782706372007437,
+          "psi_band": "stable",
+          "significant": true,
+          "statistic": 0.07605555555555565,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.08605555555555566,
+          "feature": "BILL_AMT5",
+          "p_value": 5.1582530094637244e-17,
+          "psi": 0.022954550365158605,
+          "psi_band": "stable",
+          "significant": true,
+          "statistic": 0.08605555555555566,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.08272222222222236,
+          "feature": "BILL_AMT6",
+          "p_value": 9.412714985312417e-16,
+          "psi": 0.028492670045327285,
+          "psi_band": "stable",
+          "significant": true,
+          "statistic": 0.08272222222222236,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.011944444444444535,
+          "feature": "PAY_AMT1",
+          "p_value": 0.8522965630596033,
+          "psi": 0.0018518174411084115,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.011944444444444535,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.011166666666666769,
+          "feature": "PAY_AMT2",
+          "p_value": 0.9019711715674101,
+          "psi": 0.0038238432738025513,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.011166666666666769,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.01688888888888873,
+          "feature": "PAY_AMT3",
+          "p_value": 0.45082437146885157,
+          "psi": 0.0024355888823056207,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.01688888888888873,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.01566666666666669,
+          "feature": "PAY_AMT4",
+          "p_value": 0.5479848956365961,
+          "psi": 0.003720854868101744,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.01566666666666669,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.01927777777777781,
+          "feature": "PAY_AMT5",
+          "p_value": 0.29119892019111937,
+          "psi": 0.0029084755975930417,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.01927777777777781,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.025000000000000022,
+          "feature": "PAY_AMT6",
+          "p_value": 0.07906364497916363,
+          "psi": 0.003803306790875078,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.025000000000000022,
+          "test": "KS"
+        }
+      ],
+      "label_free_decision": {
+        "action": "retrain",
+        "feature_drift_share": 0.13043478260869565,
+        "reasons": [
+          "prediction PSI 0.223 >= 0.2",
+          "no labels yet: precautionary challenger"
+        ]
+      },
+      "labels": {
+        "n": 3000,
+        "p_value": 0.8812682899905284,
+        "rate": 0.22,
+        "reference_rate": 0.2212222222222222,
+        "z": -0.14936162605847272
+      },
+      "n": 3000,
+      "n_drifted_features": 3,
+      "n_significant_features": 9,
+      "performance": {
+        "batch_optimal_threshold": 0.24,
+        "brier": 0.14054937517712926,
+        "business_cost": 0.603,
+        "calibration_gap": 0.04183211470670836,
+        "cost_regret": 0.035489410417859135,
+        "ece": 0.04782424000330471,
+        "pr_auc": 0.5374619905226307,
+        "recall": 0.8878787878787879,
+        "roc_auc": 0.7626168738668739,
+        "roc_auc_drop": 0.01808826561628951
+      },
+      "prediction_drift": {
+        "decline_rate_current": 0.675,
+        "decline_rate_reference": 0.4723333333333333,
+        "ks": 0.2063333333333333,
+        "ks_p_value": 2.7656790418096345e-56,
+        "mean_current": 0.26183211470670836,
+        "mean_reference": 0.21880712847206485,
+        "psi": 0.2230944223603759
+      },
+      "scenario": "covariate_shift",
+      "scored": "as received"
+    },
+    {
+      "data_quality": {
+        "columns_with_missing": {
+          "BILL_AMT1": 0.15533333333333332,
+          "BILL_AMT2": 0.137,
+          "BILL_AMT3": 0.15866666666666668,
+          "PAY_AMT1": 0.14933333333333335
+        },
+        "max_missing_rate": 0.15866666666666668,
+        "pay_status_out_of_range": 0,
+        "unseen_categories": {},
+        "unseen_category_rows": 0
+      },
+      "decision": {
+        "action": "block",
+        "reasons": [
+          "missing rate 15.9% > 2% on BILL_AMT1, BILL_AMT2, BILL_AMT3, PAY_AMT1",
+          "fix the upstream feed; scores unreliable"
+        ]
+      },
+      "description": "15% of BILL_AMT1-3 and PAY_AMT1 values missing (upstream feed failure).",
+      "feature_drift": [
+        {
+          "drifted": false,
+          "effect": 0.01699999999999996,
+          "feature": "LIMIT_BAL",
+          "p_value": 0.4424466515560228,
+          "psi": 0.0022448887786356204,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.01699999999999996,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.008803571097136847,
+          "feature": "SEX",
+          "p_value": 0.20204084711376563,
+          "psi": 0.0006506776144010945,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 1.6275601453092088,
+          "test": "chi-square"
+        },
+        {
+          "drifted": false,
+          "effect": 0.018726516403792776,
+          "feature": "EDUCATION",
+          "p_value": 0.28846368831071895,
+          "psi": 0.003468138687757104,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 7.364330749051917,
+          "test": "chi-square"
+        },
+        {
+          "drifted": false,
+          "effect": 0.01248573233106072,
+          "feature": "MARRIAGE",
+          "p_value": 0.35131096712332327,
+          "psi": 0.0012452309497998433,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 3.273763748700794,
+          "test": "chi-square"
+        },
+        {
+          "drifted": false,
+          "effect": 0.01216666666666677,
+          "feature": "AGE",
+          "p_value": 0.8365184120250622,
+          "psi": 0.001984393535706086,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.01216666666666677,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.026662888620644726,
+          "feature": "PAY_0",
+          "p_value": 0.13466812084162255,
+          "psi": 0.005337518662879724,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 14.929102221535027,
+          "test": "chi-square"
+        },
+        {
+          "drifted": false,
+          "effect": 0.018364536917427326,
+          "feature": "PAY_2",
+          "p_value": 0.7176455144806544,
+          "psi": 0.002811899543057325,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 7.082380540022574,
+          "test": "chi-square"
+        },
+        {
+          "drifted": false,
+          "effect": 0.018453024344150113,
+          "feature": "PAY_3",
+          "p_value": 0.7111363064332353,
+          "psi": 0.0024588328909388294,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 7.1507962563617316,
+          "test": "chi-square"
+        },
+        {
+          "drifted": false,
+          "effect": 0.014915780632634901,
+          "feature": "PAY_4",
+          "p_value": 0.9119795602176733,
+          "psi": 0.0011589582478947335,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 4.672090749498614,
+          "test": "chi-square"
+        },
+        {
+          "drifted": false,
+          "effect": 0.015435413481069983,
+          "feature": "PAY_5",
+          "p_value": 0.8340212133965611,
+          "psi": 0.0015981166782383077,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 5.003291775963536,
+          "test": "chi-square"
+        },
+        {
+          "drifted": false,
+          "effect": 0.028190558066440302,
+          "feature": "PAY_6",
+          "p_value": 0.05381728801308996,
+          "psi": 0.005257856779474396,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 16.68885884604419,
+          "test": "chi-square"
+        },
+        {
+          "drifted": false,
+          "effect": 0.01327944400596337,
+          "feature": "BILL_AMT1",
+          "p_value": 0.8232495692177781,
+          "psi": 0.003707120125313545,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.01327944400596337,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.012800823998970007,
+          "feature": "BILL_AMT2",
+          "p_value": 0.847441395427743,
+          "psi": 0.0011251309480013315,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.012800823998970007,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.009654252509244593,
+          "feature": "BILL_AMT3",
+          "p_value": 0.9848184446690519,
+          "psi": 0.0006883974582687053,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.009654252509244593,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.012166666666666659,
+          "feature": "BILL_AMT4",
+          "p_value": 0.8365184120250702,
+          "psi": 0.0020944255530032647,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.012166666666666659,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.011666666666666714,
+          "feature": "BILL_AMT5",
+          "p_value": 0.8710868633817928,
+          "psi": 0.0006135350642260727,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.011666666666666714,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.009611111111111237,
+          "feature": "BILL_AMT6",
+          "p_value": 0.969659990646057,
+          "psi": 0.002126294957176644,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.009611111111111237,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.013832114245907356,
+          "feature": "PAY_AMT1",
+          "p_value": 0.7804496441338964,
+          "psi": 0.0020638464609676953,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.013832114245907356,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.02761111111111103,
+          "feature": "PAY_AMT2",
+          "p_value": 0.03894048367562819,
+          "psi": 0.005303721417475941,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.02761111111111103,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.012833333333333252,
+          "feature": "PAY_AMT3",
+          "p_value": 0.7858456504834256,
+          "psi": 0.0020305938756756603,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.012833333333333252,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.017999999999999905,
+          "feature": "PAY_AMT4",
+          "p_value": 0.37107092416248033,
+          "psi": 0.001465444432483742,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.017999999999999905,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.017444444444444374,
+          "feature": "PAY_AMT5",
+          "p_value": 0.40980679645622387,
+          "psi": 0.002934353406321032,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.017444444444444374,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.013222222222222246,
+          "feature": "PAY_AMT6",
+          "p_value": 0.7544749298244894,
+          "psi": 0.0006061526528836564,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.013222222222222246,
+          "test": "KS"
+        }
+      ],
+      "label_free_decision": {
+        "action": "block",
+        "reasons": [
+          "missing rate 15.9% > 2% on BILL_AMT1, BILL_AMT2, BILL_AMT3, PAY_AMT1",
+          "fix the upstream feed; scores unreliable"
+        ]
+      },
+      "labels": {
+        "n": 3000,
+        "p_value": 0.29495489515453566,
+        "rate": 0.21266666666666667,
+        "reference_rate": 0.2212222222222222,
+        "z": -1.0473137528296343
+      },
+      "n": 3000,
+      "n_drifted_features": 0,
+      "n_significant_features": 0,
+      "performance": {
+        "batch_optimal_threshold": 0.265,
+        "brier": 0.12530220841865344,
+        "business_cost": 0.52,
+        "calibration_gap": 0.025650822843860138,
+        "cost_regret": 0.019607843137254832,
+        "ece": 0.03909604171228362,
+        "pr_auc": 0.5826539913013282,
+        "recall": 0.8369905956112853,
+        "roc_auc": 0.8021654248697373,
+        "roc_auc_drop": -0.021460285386573852
+      },
+      "prediction_drift": {
+        "decline_rate_current": 0.5246666666666666,
+        "decline_rate_reference": 0.4723333333333333,
+        "ks": 0.09433333333333334,
+        "ks_p_value": 4.916358106873414e-12,
+        "mean_current": 0.2383174895105268,
+        "mean_reference": 0.21880712847206485,
+        "psi": 0.04027261108304599
+      },
+      "scenario": "missing_values",
+      "scored": "as received"
+    },
+    {
+      "data_quality": {
+        "columns_with_missing": {},
+        "max_missing_rate": 0.0,
+        "pay_status_out_of_range": 0,
+        "unseen_categories": {
+          "EDUCATION": [
+            7,
+            8
+          ],
+          "MARRIAGE": [
+            4
+          ]
+        },
+        "unseen_category_rows": 307
+      },
+      "decision": {
+        "action": "block",
+        "reasons": [
+          "unseen category codes {'EDUCATION': [7, 8], 'MARRIAGE': [4]}",
+          "fix the upstream feed; scores unreliable"
+        ]
+      },
+      "description": "10% of rows carry EDUCATION 7/8 or MARRIAGE 4, codes the model never saw.",
+      "feature_drift": [
+        {
+          "drifted": false,
+          "effect": 0.019999999999999962,
+          "feature": "LIMIT_BAL",
+          "p_value": 0.251830582737645,
+          "psi": 0.0032332914090036488,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.019999999999999962,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.008565276503404407,
+          "feature": "SEX",
+          "p_value": 0.21452209253844387,
+          "psi": 0.0006165204919720704,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 1.540643193175204,
+          "test": "chi-square"
+        },
+        {
+          "drifted": true,
+          "effect": 0.2093341592986507,
+          "feature": "EDUCATION",
+          "p_value": 2.434749443881407e-193,
+          "psi": 0.28333811013896765,
+          "psi_band": "major",
+          "significant": true,
+          "statistic": 920.2365952347302,
+          "test": "chi-square"
+        },
+        {
+          "drifted": true,
+          "effect": 0.21209954468650796,
+          "feature": "MARRIAGE",
+          "p_value": 3.4189828964051585e-203,
+          "psi": 0.3280106142288602,
+          "psi_band": "major",
+          "significant": true,
+          "statistic": 944.7105539807037,
+          "test": "chi-square"
+        },
+        {
+          "drifted": false,
+          "effect": 0.020222222222222253,
+          "feature": "AGE",
+          "p_value": 0.24054401591467978,
+          "psi": 0.0028265891171321495,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.020222222222222253,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.02065997843517994,
+          "feature": "PAY_0",
+          "p_value": 0.5355682947742946,
+          "psi": 0.003189365199739666,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 8.963528887784102,
+          "test": "chi-square"
+        },
+        {
+          "drifted": false,
+          "effect": 0.020325586294832308,
+          "feature": "PAY_2",
+          "p_value": 0.5631305328644689,
+          "psi": 0.0032320128641583224,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 8.675718622802172,
+          "test": "chi-square"
+        },
+        {
+          "drifted": false,
+          "effect": 0.01771007256991319,
+          "feature": "PAY_3",
+          "p_value": 0.7638124073310592,
+          "psi": 0.0024450848420750483,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 6.586580079063424,
+          "test": "chi-square"
+        },
+        {
+          "drifted": false,
+          "effect": 0.016877110949138352,
+          "feature": "PAY_4",
+          "p_value": 0.8168089034126131,
+          "psi": 0.0015528807446771977,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 5.981574353780038,
+          "test": "chi-square"
+        },
+        {
+          "drifted": false,
+          "effect": 0.015095556408600256,
+          "feature": "PAY_5",
+          "p_value": 0.8526004748286728,
+          "psi": 0.0016905529237768767,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 4.785392288989877,
+          "test": "chi-square"
+        },
+        {
+          "drifted": false,
+          "effect": 0.02137315959592206,
+          "feature": "PAY_6",
+          "p_value": 0.3844224329886029,
+          "psi": 0.0031078632985393337,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 9.593050973367863,
+          "test": "chi-square"
+        },
+        {
+          "drifted": false,
+          "effect": 0.02266666666666667,
+          "feature": "BILL_AMT1",
+          "p_value": 0.1402640524184352,
+          "psi": 0.0053194329514896985,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.02266666666666667,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.02411111111111114,
+          "feature": "BILL_AMT2",
+          "p_value": 0.09901763533412578,
+          "psi": 0.003590077035948844,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.02411111111111114,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.026333333333333375,
+          "feature": "BILL_AMT3",
+          "p_value": 0.05555590922655995,
+          "psi": 0.0031015010461514455,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.026333333333333375,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.02388888888888896,
+          "feature": "BILL_AMT4",
+          "p_value": 0.10461445982272322,
+          "psi": 0.0035267027924313042,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.02388888888888896,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.02400000000000002,
+          "feature": "BILL_AMT5",
+          "p_value": 0.10178409183615478,
+          "psi": 0.003723787916064096,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.02400000000000002,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.025222222222222368,
+          "feature": "BILL_AMT6",
+          "p_value": 0.07464296682110538,
+          "psi": 0.003148421503471058,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.025222222222222368,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.016222222222222138,
+          "feature": "PAY_AMT1",
+          "p_value": 0.5027718776147727,
+          "psi": 0.003442824609651624,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.016222222222222138,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.013611111111111018,
+          "feature": "PAY_AMT2",
+          "p_value": 0.722182899298329,
+          "psi": 0.002216891496589986,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.013611111111111018,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.0173333333333332,
+          "feature": "PAY_AMT3",
+          "p_value": 0.4178329560374453,
+          "psi": 0.004041005094523869,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.0173333333333332,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.015500000000000042,
+          "feature": "PAY_AMT4",
+          "p_value": 0.561827001885957,
+          "psi": 0.001750437002800005,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.015500000000000042,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.010500000000000176,
+          "feature": "PAY_AMT5",
+          "p_value": 0.9364981334896355,
+          "psi": 0.004357525187735868,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.010500000000000176,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.013888888888888923,
+          "feature": "PAY_AMT6",
+          "p_value": 0.6987301583339243,
+          "psi": 0.0013108693463635287,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.013888888888888923,
+          "test": "KS"
+        }
+      ],
+      "label_free_decision": {
+        "action": "block",
+        "reasons": [
+          "unseen category codes {'EDUCATION': [7, 8], 'MARRIAGE': [4]}",
+          "fix the upstream feed; scores unreliable"
+        ]
+      },
+      "labels": {
+        "n": 3000,
+        "p_value": 0.8599722270563919,
+        "rate": 0.22266666666666668,
+        "reference_rate": 0.2212222222222222,
+        "z": 0.1764095187507672
+      },
+      "n": 3000,
+      "n_drifted_features": 2,
+      "n_significant_features": 2,
+      "performance": {
+        "batch_optimal_threshold": 0.165,
+        "brier": 0.1350989094608764,
+        "business_cost": 0.5586666666666666,
+        "calibration_gap": -0.0008636894085354008,
+        "cost_regret": 0.013914095583786867,
+        "ece": 0.016664044428083415,
+        "pr_auc": 0.5577941376114213,
+        "recall": 0.7724550898203593,
+        "roc_auc": 0.7815895866928236,
+        "roc_auc_drop": -0.0008844472096601885
+      },
+      "prediction_drift": {
+        "decline_rate_current": 0.47733333333333333,
+        "decline_rate_reference": 0.4723333333333333,
+        "ks": 0.02533333333333332,
+        "ks_p_value": 0.29078524141651707,
+        "mean_current": 0.22180297725813128,
+        "mean_reference": 0.21880712847206485,
+        "psi": 0.0019604902935243806
+      },
+      "scenario": "new_categories",
+      "scored": "as received"
+    },
+    {
+      "data_quality": {
+        "columns_with_missing": {},
+        "max_missing_rate": 0.0,
+        "pay_status_out_of_range": 0,
+        "unseen_categories": {},
+        "unseen_category_rows": 0
+      },
+      "decision": {
+        "action": "monitor",
+        "feature_drift_share": 0.13043478260869565,
+        "reasons": [
+          "prediction PSI 0.414 >= 0.2",
+          "labelled performance within limits: the model handles this shift",
+          "default rate 35.3% (p = 3.6e-55)"
+        ]
+      },
+      "description": "Resampled so 60% of applicants are already 1+ months late on PAY_0 (about 23% in the reference).",
+      "feature_drift": [
+        {
+          "drifted": false,
+          "effect": 0.08961111111111103,
+          "feature": "LIMIT_BAL",
+          "p_value": 2.051015985425871e-18,
+          "psi": 0.03915861168557355,
+          "psi_band": "stable",
+          "significant": true,
+          "statistic": 0.08961111111111103,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.004751230597480071,
+          "feature": "SEX",
+          "p_value": 0.49112618211407433,
+          "psi": 0.00019490579804456838,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.47405803599904756,
+          "test": "chi-square"
+        },
+        {
+          "drifted": false,
+          "effect": 0.03344726760383919,
+          "feature": "EDUCATION",
+          "p_value": 0.0006470766427694811,
+          "psi": 0.010473107750933122,
+          "psi_band": "stable",
+          "significant": true,
+          "statistic": 23.493113913419446,
+          "test": "chi-square"
+        },
+        {
+          "drifted": false,
+          "effect": 0.022244963748569227,
+          "feature": "MARRIAGE",
+          "p_value": 0.01551451072973899,
+          "psi": 0.004973336006009917,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 10.391606655678341,
+          "test": "chi-square"
+        },
+        {
+          "drifted": false,
+          "effect": 0.028888888888888964,
+          "feature": "AGE",
+          "p_value": 0.02683919621194808,
+          "psi": 0.010477915981403383,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.028888888888888964,
+          "test": "KS"
+        },
+        {
+          "drifted": true,
+          "effect": 0.2893644712918023,
+          "feature": "PAY_0",
+          "p_value": 0.0,
+          "psi": 0.6009723232397683,
+          "psi_band": "major",
+          "significant": true,
+          "statistic": 1758.3677421656698,
+          "test": "chi-square"
+        },
+        {
+          "drifted": true,
+          "effect": 0.2058873009399996,
+          "feature": "PAY_2",
+          "p_value": 8.262354899344861e-185,
+          "psi": 0.29201568350498486,
+          "psi_band": "major",
+          "significant": true,
+          "statistic": 890.1811944555171,
+          "test": "chi-square"
+        },
+        {
+          "drifted": true,
+          "effect": 0.13884218825779815,
+          "feature": "PAY_3",
+          "p_value": 8.866431180448285e-81,
+          "psi": 0.13284598093538658,
+          "psi_band": "moderate",
+          "significant": true,
+          "statistic": 404.8202180444912,
+          "test": "chi-square"
+        },
+        {
+          "drifted": false,
+          "effect": 0.11874492470287686,
+          "feature": "PAY_4",
+          "p_value": 1.0335989609089652e-57,
+          "psi": 0.09683395146341965,
+          "psi_band": "stable",
+          "significant": true,
+          "statistic": 296.1074999965298,
+          "test": "chi-square"
+        },
+        {
+          "drifted": false,
+          "effect": 0.10638734923955254,
+          "feature": "PAY_5",
+          "p_value": 3.956161891476394e-46,
+          "psi": 0.0767711770385746,
+          "psi_band": "stable",
+          "significant": true,
+          "statistic": 237.6836296425889,
+          "test": "chi-square"
+        },
+        {
+          "drifted": false,
+          "effect": 0.09635798016420725,
+          "feature": "PAY_6",
+          "p_value": 3.7292722090697798e-37,
+          "psi": 0.0625359226038459,
+          "psi_band": "stable",
+          "significant": true,
+          "statistic": 194.98206716784094,
+          "test": "chi-square"
+        },
+        {
+          "drifted": false,
+          "effect": 0.07488888888888888,
+          "feature": "BILL_AMT1",
+          "p_value": 5.501817706315171e-13,
+          "psi": 0.06434726719037326,
+          "psi_band": "stable",
+          "significant": true,
+          "statistic": 0.07488888888888888,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.03788888888888889,
+          "feature": "BILL_AMT2",
+          "p_value": 0.0012119425570108959,
+          "psi": 0.01724385299812722,
+          "psi_band": "stable",
+          "significant": true,
+          "statistic": 0.03788888888888889,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.03722222222222221,
+          "feature": "BILL_AMT3",
+          "p_value": 0.0015687666150785832,
+          "psi": 0.015309252331054766,
+          "psi_band": "stable",
+          "significant": true,
+          "statistic": 0.03722222222222221,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.03627777777777777,
+          "feature": "BILL_AMT4",
+          "p_value": 0.0022435159520297274,
+          "psi": 0.01995549166165886,
+          "psi_band": "stable",
+          "significant": true,
+          "statistic": 0.03627777777777777,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.029666666666666675,
+          "feature": "BILL_AMT5",
+          "p_value": 0.021223192152515696,
+          "psi": 0.011900426801202802,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.029666666666666675,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.026555555555555554,
+          "feature": "BILL_AMT6",
+          "p_value": 0.05228958738819167,
+          "psi": 0.008319208324252763,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.026555555555555554,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.13722222222222222,
+          "feature": "PAY_AMT1",
+          "p_value": 1.0890878336344002e-42,
+          "psi": 0.09734347103157226,
+          "psi_band": "stable",
+          "significant": true,
+          "statistic": 0.13722222222222222,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.09211111111111109,
+          "feature": "PAY_AMT2",
+          "p_value": 1.963591484510481e-19,
+          "psi": 0.05689761683613108,
+          "psi_band": "stable",
+          "significant": true,
+          "statistic": 0.09211111111111109,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.07655555555555557,
+          "feature": "PAY_AMT3",
+          "p_value": 1.4961157705774582e-13,
+          "psi": 0.031663514217243935,
+          "psi_band": "stable",
+          "significant": true,
+          "statistic": 0.07655555555555557,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.07477777777777772,
+          "feature": "PAY_AMT4",
+          "p_value": 5.99465894750414e-13,
+          "psi": 0.023578528132199666,
+          "psi_band": "stable",
+          "significant": true,
+          "statistic": 0.07477777777777772,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.08466666666666667,
+          "feature": "PAY_AMT5",
+          "p_value": 1.7542685951728765e-16,
+          "psi": 0.0273857362620781,
+          "psi_band": "stable",
+          "significant": true,
+          "statistic": 0.08466666666666667,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.06466666666666665,
+          "feature": "PAY_AMT6",
+          "p_value": 8.627598077811808e-10,
+          "psi": 0.019841395777704787,
+          "psi_band": "stable",
+          "significant": true,
+          "statistic": 0.06466666666666665,
+          "test": "KS"
+        }
+      ],
+      "label_free_decision": {
+        "action": "retrain",
+        "feature_drift_share": 0.13043478260869565,
+        "reasons": [
+          "prediction PSI 0.414 >= 0.2",
+          "no labels yet: precautionary challenger"
+        ]
+      },
+      "labels": {
+        "n": 3000,
+        "p_value": 3.569465830640438e-55,
+        "rate": 0.353,
+        "reference_rate": 0.2212222222222222,
+        "z": 15.645430610999176
+      },
+      "n": 3000,
+      "n_drifted_features": 3,
+      "n_significant_features": 18,
+      "performance": {
+        "batch_optimal_threshold": 0.15,
+        "brier": 0.17231908978279345,
+        "business_cost": 0.525,
+        "calibration_gap": 0.0062543002924718705,
+        "cost_regret": 0.008322663252240625,
+        "ece": 0.0441207579690451,
+        "pr_auc": 0.6752500000325145,
+        "recall": 0.9225684608120869,
+        "roc_auc": 0.7957593678287577,
+        "roc_auc_drop": -0.015054228345594223
+      },
+      "prediction_drift": {
+        "decline_rate_current": 0.714,
+        "decline_rate_reference": 0.4723333333333333,
+        "ks": 0.30100000000000005,
+        "ks_p_value": 2.6836404988085233e-120,
+        "mean_current": 0.35925430029247185,
+        "mean_reference": 0.21880712847206485,
+        "psi": 0.4135158624829782
+      },
+      "scenario": "riskier_mix",
+      "scored": "as received"
+    },
+    {
+      "data_quality": {
+        "columns_with_missing": {},
+        "max_missing_rate": 0.0,
+        "pay_status_out_of_range": 0,
+        "unseen_categories": {},
+        "unseen_category_rows": 0
+      },
+      "decision": {
+        "action": "retrain",
+        "feature_drift_share": 0.0,
+        "reasons": [
+          "calibration gap -0.096 (mean predicted - observed) beyond +/-0.05",
+          "deployed cutoff costs 16% more than the batch-optimal cutoff 0.105 (limit 5%)"
+        ]
+      },
+      "description": "Resampled to a ~35% default rate, features drawn from the same per-class distributions (prior shift).",
+      "feature_drift": [
+        {
+          "drifted": false,
+          "effect": 0.03294444444444444,
+          "feature": "LIMIT_BAL",
+          "p_value": 0.007368903443651566,
+          "psi": 0.006002725921385816,
+          "psi_band": "stable",
+          "significant": true,
+          "statistic": 0.03294444444444444,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.009280131039320945,
+          "feature": "SEX",
+          "p_value": 0.17868377322561008,
+          "psi": 0.0007217404481565648,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 1.8085374742463287,
+          "test": "chi-square"
+        },
+        {
+          "drifted": false,
+          "effect": 0.016790326236532243,
+          "feature": "EDUCATION",
+          "p_value": 0.43218668998548493,
+          "psi": 0.0025827465347658092,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 5.920216157712842,
+          "test": "chi-square"
+        },
+        {
+          "drifted": false,
+          "effect": 0.015520082815494319,
+          "feature": "MARRIAGE",
+          "p_value": 0.167575254669531,
+          "psi": 0.0019687312179931162,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 5.058332382595843,
+          "test": "chi-square"
+        },
+        {
+          "drifted": false,
+          "effect": 0.03511111111111109,
+          "feature": "AGE",
+          "p_value": 0.003446263669307587,
+          "psi": 0.007840779291570728,
+          "psi_band": "stable",
+          "significant": true,
+          "statistic": 0.03511111111111109,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.05182099209275642,
+          "feature": "PAY_0",
+          "p_value": 1.7321388795120893e-08,
+          "psi": 0.01946583753009137,
+          "psi_band": "stable",
+          "significant": true,
+          "statistic": 56.39371965102798,
+          "test": "chi-square"
+        },
+        {
+          "drifted": false,
+          "effect": 0.040855208416974514,
+          "feature": "PAY_2",
+          "p_value": 0.00012233412718727583,
+          "psi": 0.01260622048545726,
+          "psi_band": "stable",
+          "significant": true,
+          "statistic": 35.052109150682924,
+          "test": "chi-square"
+        },
+        {
+          "drifted": false,
+          "effect": 0.036638382580909366,
+          "feature": "PAY_3",
+          "p_value": 0.0016831311193368963,
+          "psi": 0.009886098194785503,
+          "psi_band": "stable",
+          "significant": true,
+          "statistic": 28.189792641046743,
+          "test": "chi-square"
+        },
+        {
+          "drifted": false,
+          "effect": 0.03784815038072061,
+          "feature": "PAY_4",
+          "p_value": 0.0008305379336446579,
+          "psi": 0.01041148135752331,
+          "psi_band": "stable",
+          "significant": true,
+          "statistic": 30.082132232074475,
+          "test": "chi-square"
+        },
+        {
+          "drifted": false,
+          "effect": 0.041081706999218356,
+          "feature": "PAY_5",
+          "p_value": 4.978348513253211e-05,
+          "psi": 0.011826053518341526,
+          "psi_band": "stable",
+          "significant": true,
+          "statistic": 35.44183964936215,
+          "test": "chi-square"
+        },
+        {
+          "drifted": false,
+          "effect": 0.03611537605932062,
+          "feature": "PAY_6",
+          "p_value": 0.00120499302337657,
+          "psi": 0.0085112030037249,
+          "psi_band": "stable",
+          "significant": true,
+          "statistic": 27.390728146029133,
+          "test": "chi-square"
+        },
+        {
+          "drifted": false,
+          "effect": 0.013111111111111184,
+          "feature": "BILL_AMT1",
+          "p_value": 0.7635463601425359,
+          "psi": 0.006266892732635731,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.013111111111111184,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.01144444444444448,
+          "feature": "BILL_AMT2",
+          "p_value": 0.8853039643553652,
+          "psi": 0.002622227912023253,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.01144444444444448,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.013277777777777833,
+          "feature": "BILL_AMT3",
+          "p_value": 0.7499105700534747,
+          "psi": 0.0025923309526589,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.013277777777777833,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.013000000000000012,
+          "feature": "BILL_AMT4",
+          "p_value": 0.7725349877302776,
+          "psi": 0.003479722478931991,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.013000000000000012,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.016555555555555546,
+          "feature": "BILL_AMT5",
+          "p_value": 0.4764511369014196,
+          "psi": 0.0017467217607168178,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.016555555555555546,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.018777777777777893,
+          "feature": "BILL_AMT6",
+          "p_value": 0.32089643437575566,
+          "psi": 0.0032815878080207344,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.018777777777777893,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.028166666666666645,
+          "feature": "PAY_AMT1",
+          "p_value": 0.03319126491567714,
+          "psi": 0.006270917937661028,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.028166666666666645,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.02922222222222215,
+          "feature": "PAY_AMT2",
+          "p_value": 0.02428867936979673,
+          "psi": 0.004479469335123989,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.02922222222222215,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.026833333333333265,
+          "feature": "PAY_AMT3",
+          "p_value": 0.048440725828990505,
+          "psi": 0.0031750968335605596,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.026833333333333265,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.030611111111111033,
+          "feature": "PAY_AMT4",
+          "p_value": 0.01582581478982994,
+          "psi": 0.004883230037703075,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.030611111111111033,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.028555555555555556,
+          "feature": "PAY_AMT5",
+          "p_value": 0.029623628576774363,
+          "psi": 0.005304330625229869,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.028555555555555556,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.015611111111111131,
+          "feature": "PAY_AMT6",
+          "p_value": 0.5525863130293205,
+          "psi": 0.0016485068691977642,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.015611111111111131,
+          "test": "KS"
+        }
+      ],
+      "label_free_decision": {
+        "action": "monitor",
+        "feature_drift_share": 0.0,
+        "reasons": [
+          "default rate 35.0% (p = 7.8e-53)"
+        ]
+      },
+      "labels": {
+        "n": 3000,
+        "p_value": 7.811114743517513e-53,
+        "rate": 0.35,
+        "reference_rate": 0.2212222222222222,
+        "z": 15.298606551304852
+      },
+      "n": 3000,
+      "n_drifted_features": 0,
+      "n_significant_features": 8,
+      "performance": {
+        "batch_optimal_threshold": 0.105,
+        "brier": 0.18374021091111672,
+        "business_cost": 0.6666666666666666,
+        "calibration_gap": -0.0963527307060702,
+        "cost_regret": 0.1594202898550725,
+        "ece": 0.09635273070607024,
+        "pr_auc": 0.6842418082047363,
+        "recall": 0.7733333333333333,
+        "roc_auc": 0.7740715506715508,
+        "roc_auc_drop": 0.0066335888116126895
+      },
+      "prediction_drift": {
+        "decline_rate_current": 0.5406666666666666,
+        "decline_rate_reference": 0.4723333333333333,
+        "ks": 0.08200000000000002,
+        "ks_p_value": 3.4045708149489307e-09,
+        "mean_current": 0.2536472692939298,
+        "mean_reference": 0.21880712847206485,
+        "psi": 0.03466491970918741
+      },
+      "scenario": "label_shift",
+      "scored": "as received"
+    },
+    {
+      "data_quality": {
+        "columns_with_missing": {},
+        "max_missing_rate": 0.0,
+        "pay_status_out_of_range": 0,
+        "unseen_categories": {},
+        "unseen_category_rows": 0
+      },
+      "decision": {
+        "action": "retrain",
+        "feature_drift_share": 0.0,
+        "reasons": [
+          "ROC-AUC dropped 0.036 > 0.03",
+          "calibration gap -0.051 (mean predicted - observed) beyond +/-0.05",
+          "deployed cutoff costs 22% more than the batch-optimal cutoff 0.110 (limit 5%)"
+        ]
+      },
+      "description": "Same applicants, but 30% of non-defaulters with utilisation >= 80% and PAY_0 <= 0 now default.",
+      "feature_drift": [
+        {
+          "drifted": false,
+          "effect": 0.009333333333333305,
+          "feature": "LIMIT_BAL",
+          "p_value": 0.9770340945946419,
+          "psi": 0.0007623479912880822,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.009333333333333305,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.004038788199810315,
+          "feature": "SEX",
+          "p_value": 0.5583621402918648,
+          "psi": 0.00014282836865940022,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.3425480125814679,
+          "test": "chi-square"
+        },
+        {
+          "drifted": false,
+          "effect": 0.010535396491424438,
+          "feature": "EDUCATION",
+          "p_value": 0.8868933767015136,
+          "psi": 0.0009587301270210802,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 2.330886163861886,
+          "test": "chi-square"
+        },
+        {
+          "drifted": false,
+          "effect": 0.008124862165161152,
+          "feature": "MARRIAGE",
+          "p_value": 0.7087536478221548,
+          "psi": 0.0005859849436288722,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 1.3862810892602102,
+          "test": "chi-square"
+        },
+        {
+          "drifted": false,
+          "effect": 0.022777777777777786,
+          "feature": "AGE",
+          "p_value": 0.13666202158049334,
+          "psi": 0.004986228448409266,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.022777777777777786,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.02567351278290307,
+          "feature": "PAY_0",
+          "p_value": 0.180334707614646,
+          "psi": 0.005018936485605698,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 13.841714430891635,
+          "test": "chi-square"
+        },
+        {
+          "drifted": false,
+          "effect": 0.021491148199076646,
+          "feature": "PAY_2",
+          "p_value": 0.467262697838174,
+          "psi": 0.003865256396628873,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 9.699258469208182,
+          "test": "chi-square"
+        },
+        {
+          "drifted": false,
+          "effect": 0.021119412914877095,
+          "feature": "PAY_3",
+          "p_value": 0.497698849072,
+          "psi": 0.0030326582572880512,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 9.366621639250628,
+          "test": "chi-square"
+        },
+        {
+          "drifted": false,
+          "effect": 0.024631983332475172,
+          "feature": "PAY_4",
+          "p_value": 0.23849041770707016,
+          "psi": 0.0036746655243840654,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 12.741426660718028,
+          "test": "chi-square"
+        },
+        {
+          "drifted": false,
+          "effect": 0.025560555682297426,
+          "feature": "PAY_5",
+          "p_value": 0.1326328361994597,
+          "psi": 0.004738136228303134,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 13.72018214254437,
+          "test": "chi-square"
+        },
+        {
+          "drifted": false,
+          "effect": 0.026559900605136886,
+          "feature": "PAY_6",
+          "p_value": 0.09617357826280135,
+          "psi": 0.004177808047735808,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 14.813994723249765,
+          "test": "chi-square"
+        },
+        {
+          "drifted": false,
+          "effect": 0.014833333333333365,
+          "feature": "BILL_AMT1",
+          "p_value": 0.6181112705065757,
+          "psi": 0.004000368233705255,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.014833333333333365,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.018722222222222196,
+          "feature": "BILL_AMT2",
+          "p_value": 0.32432017422906667,
+          "psi": 0.005588341992291851,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.018722222222222196,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.020500000000000074,
+          "feature": "BILL_AMT3",
+          "p_value": 0.2269723391971864,
+          "psi": 0.0030436388465521417,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.020500000000000074,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.01955555555555566,
+          "feature": "BILL_AMT4",
+          "p_value": 0.2755667243943366,
+          "psi": 0.005311223059415164,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.01955555555555566,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.01966666666666672,
+          "feature": "BILL_AMT5",
+          "p_value": 0.2694861595109206,
+          "psi": 0.003286169242533372,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.01966666666666672,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.018333333333333424,
+          "feature": "BILL_AMT6",
+          "p_value": 0.34897860762797106,
+          "psi": 0.0023412941119329844,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.018333333333333424,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.0150555555555556,
+          "feature": "PAY_AMT1",
+          "p_value": 0.5992195072854455,
+          "psi": 0.002035638451175628,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.0150555555555556,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.012666666666666715,
+          "feature": "PAY_AMT2",
+          "p_value": 0.7989260019030409,
+          "psi": 0.001115730091549199,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.012666666666666715,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.010666666666666658,
+          "feature": "PAY_AMT3",
+          "p_value": 0.9286239620154114,
+          "psi": 0.0008095441147836262,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.010666666666666658,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.014500000000000013,
+          "feature": "PAY_AMT4",
+          "p_value": 0.6465820300208687,
+          "psi": 0.0016285941003496463,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.014500000000000013,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.01144444444444448,
+          "feature": "PAY_AMT5",
+          "p_value": 0.8853039643553652,
+          "psi": 0.0016177157925987603,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.01144444444444448,
+          "test": "KS"
+        },
+        {
+          "drifted": false,
+          "effect": 0.0170555555555556,
+          "feature": "PAY_AMT6",
+          "p_value": 0.438289729778398,
+          "psi": 0.0014803928272278414,
+          "psi_band": "stable",
+          "significant": false,
+          "statistic": 0.0170555555555556,
+          "test": "KS"
+        }
+      ],
+      "label_free_decision": {
+        "action": "monitor",
+        "feature_drift_share": 0.0,
+        "reasons": [
+          "default rate 27.6% (p = 3.8e-11)"
+        ]
+      },
+      "labels": {
+        "n": 3000,
+        "p_value": 3.8378635992312663e-11,
+        "rate": 0.276,
+        "reference_rate": 0.2212222222222222,
+        "z": 6.610205703704141
+      },
+      "n": 3000,
+      "n_drifted_features": 0,
+      "n_significant_features": 0,
+      "performance": {
+        "batch_optimal_threshold": 0.11,
+        "brier": 0.16945350685264596,
+        "business_cost": 0.6886666666666666,
+        "calibration_gap": -0.05068133724472526,
+        "cost_regret": 0.21529411764705886,
+        "ece": 0.060559852553560535,
+        "pr_auc": 0.5530138280238661,
+        "recall": 0.711352657004831,
+        "roc_auc": 0.7448059848221991,
+        "roc_auc_drop": 0.03589915466096438
+      },
+      "prediction_drift": {
+        "decline_rate_current": 0.4866666666666667,
+        "decline_rate_reference": 0.4723333333333333,
+        "ks": 0.027999999999999997,
+        "ks_p_value": 0.19020977108607973,
+        "mean_current": 0.22531866275527476,
+        "mean_reference": 0.21880712847206485,
+        "psi": 0.0037019642366043935
+      },
+      "scenario": "concept_drift",
+      "scored": "as received"
+    }
+  ]
+}

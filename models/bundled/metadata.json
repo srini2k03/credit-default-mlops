@@ -1,4 +1,5 @@
 {
+  "calibration": "sigmoid",
   "cost": {
     "bayes_threshold": 0.16666666666666666,
     "fn_cost": 5.0,
@@ -16,31 +17,46 @@
     "source": "uci",
     "synthetic": false
   },
+  "excluded_features": [
+    "SEX",
+    "MARRIAGE",
+    "AGE"
+  ],
   "family": "lightgbm",
-  "generated_at": "2026-11-03T13:40:05Z",
-  "git_commit": "d2d766943ec531e12e393c6682ad462a8c99ff82",
+  "generated_at": "2026-11-24T10:28:04Z",
+  "git_commit": "48a6a54a17e06fc3d9ac328effbccd87ef4e98c5",
   "imbalance": "class_weight",
   "params": {
-    "colsample_bytree": 0.5120678782695272,
-    "learning_rate": 0.019425367603610008,
-    "min_child_samples": 13,
-    "n_estimators": 231,
-    "num_leaves": 36,
-    "reg_lambda": 2.7635956624116536,
+    "colsample_bytree": 0.8837023223348958,
+    "learning_rate": 0.022767365704626168,
+    "min_child_samples": 10,
+    "n_estimators": 241,
+    "num_leaves": 25,
+    "reg_lambda": 1.3648772909973252,
     "subsample": 0.8,
     "subsample_freq": 1
   },
   "test": {
-    "approval_rate": 0.5263333333333333,
-    "brier": 0.13528513175200244,
-    "business_cost": 0.5625,
-    "f1": 0.48788678340129527,
+    "approval_rate": 0.517,
+    "balanced_accuracy": 0.6887056284309598,
+    "brier": 0.13459576317553015,
+    "business_cost": 0.5578333333333333,
+    "ece": 0.014579210571682358,
+    "f1": 0.48804733727810656,
+    "fn": 296,
+    "fnr": 0.22305953278070836,
+    "fp": 1867,
+    "fpr": 0.39952921035737216,
+    "log_loss": 0.42869055924216515,
     "n": 6000,
-    "pr_auc": 0.5362360848350324,
-    "precision": 0.3578465869106263,
-    "recall": 0.7663903541823662,
-    "roc_auc": 0.7780548714891348,
-    "threshold": 0.13
+    "pr_auc": 0.5594440755548019,
+    "precision": 0.3557625948930297,
+    "recall": 0.7769404672192917,
+    "roc_auc": 0.7807051394831634,
+    "specificity": 0.6004707896426279,
+    "threshold": 0.16,
+    "tn": 2806,
+    "tp": 1031
   },
-  "threshold": 0.13
+  "threshold": 0.16
 }

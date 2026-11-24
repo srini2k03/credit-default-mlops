@@ -1,0 +1,539 @@
+{
+  "family": "lightgbm",
+  "final_aliases": {
+    "previous-production": "2",
+    "production": "1"
+  },
+  "final_production_version": "1",
+  "generated_at": "2026-11-24T10:28:37Z",
+  "git_commit": "48a6a54a17e06fc3d9ac328effbccd87ef4e98c5",
+  "note": "Simulation in a temporary MLflow registry on the real train/test splits; the served model is not touched.",
+  "timeline": [
+    {
+      "candidate": "v1 baseline",
+      "challenger": {
+        "brier": 0.1376737073311727,
+        "business_cost": 0.5858333333333333,
+        "ece": 0.013969480920665231,
+        "pr_auc": 0.5269383854446588,
+        "recall": 0.6646571213263,
+        "roc_auc": 0.765649595045759,
+        "threshold": 0.165
+      },
+      "champion": null,
+      "checks": [
+        {
+          "group": "performance",
+          "limit": ">= 0.7",
+          "name": "roc_auc_floor",
+          "passed": true,
+          "skipped": false,
+          "value": 0.765649595045759
+        },
+        {
+          "group": "performance",
+          "limit": ">= 0.45",
+          "name": "pr_auc_floor",
+          "passed": true,
+          "skipped": false,
+          "value": 0.5269383854446588
+        },
+        {
+          "group": "calibration",
+          "limit": "<= 0.05",
+          "name": "ece_ceiling",
+          "passed": true,
+          "skipped": false,
+          "value": 0.013969480920665231
+        },
+        {
+          "group": "performance",
+          "limit": "no champion yet",
+          "name": "pr_auc_vs_champion",
+          "passed": true,
+          "skipped": true,
+          "value": null
+        },
+        {
+          "group": "calibration",
+          "limit": "no champion yet",
+          "name": "brier_vs_champion",
+          "passed": true,
+          "skipped": true,
+          "value": null
+        },
+        {
+          "group": "cost",
+          "limit": "no champion yet",
+          "name": "cost_vs_champion",
+          "passed": true,
+          "skipped": true,
+          "value": null
+        },
+        {
+          "group": "operational",
+          "limit": "API columns unchanged",
+          "name": "input_contract",
+          "passed": true,
+          "skipped": false,
+          "value": "True"
+        },
+        {
+          "group": "operational",
+          "limit": "finite, in [0, 1]",
+          "name": "probabilities_valid",
+          "passed": true,
+          "skipped": false,
+          "value": "True"
+        },
+        {
+          "group": "operational",
+          "limit": "same input -> same output",
+          "name": "deterministic",
+          "passed": true,
+          "skipped": false,
+          "value": "True"
+        },
+        {
+          "group": "operational",
+          "limit": "in (0, 1)",
+          "name": "threshold_valid",
+          "passed": true,
+          "skipped": false,
+          "value": 0.165
+        },
+        {
+          "group": "operational",
+          "limit": "<= 50 ms (single row, in-process)",
+          "name": "p95_latency_ms",
+          "passed": true,
+          "skipped": false,
+          "value": 6.623565399956988
+        },
+        {
+          "group": "operational",
+          "limit": "<= 50 MB",
+          "name": "bundle_size_mb",
+          "passed": true,
+          "skipped": false,
+          "value": 0.455297
+        }
+      ],
+      "description": "First model: default hyper-parameters, 50% of the training rows.",
+      "event": "promote",
+      "id": 1,
+      "production_after": "1",
+      "production_before": null,
+      "reasons": [
+        "no production model: challenger accepted as the first version"
+      ],
+      "source": "simulation",
+      "ts": "2026-11-24T10:28:31Z",
+      "version": "1"
+    },
+    {
+      "candidate": "v2 retrained",
+      "challenger": {
+        "brier": 0.13457139932206447,
+        "business_cost": 0.5561666666666667,
+        "ece": 0.014162510484026308,
+        "pr_auc": 0.5598896433635852,
+        "recall": 0.7776940467219292,
+        "roc_auc": 0.7812862487786384,
+        "threshold": 0.16
+      },
+      "champion": {
+        "brier": 0.1376737073311727,
+        "business_cost": 0.5858333333333333,
+        "ece": 0.013969480920665231,
+        "pr_auc": 0.5269383854446588,
+        "recall": 0.6646571213263,
+        "roc_auc": 0.765649595045759,
+        "threshold": 0.165
+      },
+      "checks": [
+        {
+          "group": "performance",
+          "limit": ">= 0.7",
+          "name": "roc_auc_floor",
+          "passed": true,
+          "skipped": false,
+          "value": 0.7812862487786384
+        },
+        {
+          "group": "performance",
+          "limit": ">= 0.45",
+          "name": "pr_auc_floor",
+          "passed": true,
+          "skipped": false,
+          "value": 0.5598896433635852
+        },
+        {
+          "group": "calibration",
+          "limit": "<= 0.05",
+          "name": "ece_ceiling",
+          "passed": true,
+          "skipped": false,
+          "value": 0.014162510484026308
+        },
+        {
+          "group": "performance",
+          "limit": ">= champion 0.5269 - 0.005",
+          "name": "pr_auc_vs_champion",
+          "passed": true,
+          "skipped": false,
+          "value": 0.5598896433635852
+        },
+        {
+          "group": "calibration",
+          "limit": "<= champion 0.1377 + 0.002",
+          "name": "brier_vs_champion",
+          "passed": true,
+          "skipped": false,
+          "value": 0.13457139932206447
+        },
+        {
+          "group": "cost",
+          "limit": "<= champion 0.5858 x (1 + 0.01)",
+          "name": "cost_vs_champion",
+          "passed": true,
+          "skipped": false,
+          "value": 0.5561666666666667
+        },
+        {
+          "group": "operational",
+          "limit": "API columns unchanged",
+          "name": "input_contract",
+          "passed": true,
+          "skipped": false,
+          "value": "True"
+        },
+        {
+          "group": "operational",
+          "limit": "finite, in [0, 1]",
+          "name": "probabilities_valid",
+          "passed": true,
+          "skipped": false,
+          "value": "True"
+        },
+        {
+          "group": "operational",
+          "limit": "same input -> same output",
+          "name": "deterministic",
+          "passed": true,
+          "skipped": false,
+          "value": "True"
+        },
+        {
+          "group": "operational",
+          "limit": "in (0, 1)",
+          "name": "threshold_valid",
+          "passed": true,
+          "skipped": false,
+          "value": 0.16
+        },
+        {
+          "group": "operational",
+          "limit": "<= 50 ms (single row, in-process)",
+          "name": "p95_latency_ms",
+          "passed": true,
+          "skipped": false,
+          "value": 6.536513199989713
+        },
+        {
+          "group": "operational",
+          "limit": "<= 50 MB",
+          "name": "bundle_size_mb",
+          "passed": true,
+          "skipped": false,
+          "value": 0.299235
+        }
+      ],
+      "description": "Tuned hyper-parameters, all training rows (new labelled outcomes).",
+      "event": "promote",
+      "id": 2,
+      "production_after": "2",
+      "production_before": "1",
+      "reasons": [
+        "challenger passed every promotion check against production"
+      ],
+      "source": "simulation",
+      "ts": "2026-11-24T10:28:33Z",
+      "version": "2"
+    },
+    {
+      "candidate": "v3 noisy labels",
+      "challenger": {
+        "brier": 0.13663150811201782,
+        "business_cost": 0.5638333333333333,
+        "ece": 0.023239207560517335,
+        "pr_auc": 0.5416816284897932,
+        "recall": 0.7942727957799548,
+        "roc_auc": 0.7757996965362919,
+        "threshold": 0.155
+      },
+      "champion": {
+        "brier": 0.13457139932206447,
+        "business_cost": 0.5561666666666667,
+        "ece": 0.014162510484026308,
+        "pr_auc": 0.5598896433635852,
+        "recall": 0.7776940467219292,
+        "roc_auc": 0.7812862487786384,
+        "threshold": 0.16
+      },
+      "checks": [
+        {
+          "group": "performance",
+          "limit": ">= 0.7",
+          "name": "roc_auc_floor",
+          "passed": true,
+          "skipped": false,
+          "value": 0.7757996965362919
+        },
+        {
+          "group": "performance",
+          "limit": ">= 0.45",
+          "name": "pr_auc_floor",
+          "passed": true,
+          "skipped": false,
+          "value": 0.5416816284897932
+        },
+        {
+          "group": "calibration",
+          "limit": "<= 0.05",
+          "name": "ece_ceiling",
+          "passed": true,
+          "skipped": false,
+          "value": 0.023239207560517335
+        },
+        {
+          "group": "performance",
+          "limit": ">= champion 0.5599 - 0.005",
+          "name": "pr_auc_vs_champion",
+          "passed": false,
+          "skipped": false,
+          "value": 0.5416816284897932
+        },
+        {
+          "group": "calibration",
+          "limit": "<= champion 0.1346 + 0.002",
+          "name": "brier_vs_champion",
+          "passed": false,
+          "skipped": false,
+          "value": 0.13663150811201782
+        },
+        {
+          "group": "cost",
+          "limit": "<= champion 0.5562 x (1 + 0.01)",
+          "name": "cost_vs_champion",
+          "passed": false,
+          "skipped": false,
+          "value": 0.5638333333333333
+        },
+        {
+          "group": "operational",
+          "limit": "API columns unchanged",
+          "name": "input_contract",
+          "passed": true,
+          "skipped": false,
+          "value": "True"
+        },
+        {
+          "group": "operational",
+          "limit": "finite, in [0, 1]",
+          "name": "probabilities_valid",
+          "passed": true,
+          "skipped": false,
+          "value": "True"
+        },
+        {
+          "group": "operational",
+          "limit": "same input -> same output",
+          "name": "deterministic",
+          "passed": true,
+          "skipped": false,
+          "value": "True"
+        },
+        {
+          "group": "operational",
+          "limit": "in (0, 1)",
+          "name": "threshold_valid",
+          "passed": true,
+          "skipped": false,
+          "value": 0.155
+        },
+        {
+          "group": "operational",
+          "limit": "<= 50 ms (single row, in-process)",
+          "name": "p95_latency_ms",
+          "passed": true,
+          "skipped": false,
+          "value": 6.55264874999375
+        },
+        {
+          "group": "operational",
+          "limit": "<= 50 MB",
+          "name": "bundle_size_mb",
+          "passed": true,
+          "skipped": false,
+          "value": 0.299852
+        }
+      ],
+      "description": "Same recipe, but the outcome feed recorded 40% of defaults as repaid.",
+      "event": "reject",
+      "id": 3,
+      "production_after": "2",
+      "production_before": "2",
+      "reasons": [
+        "[FAIL] performance/pr_auc_vs_champion: 0.5417 (limit >= champion 0.5599 - 0.005)",
+        "[FAIL] calibration/brier_vs_champion: 0.1366 (limit <= champion 0.1346 + 0.002)",
+        "[FAIL] cost/cost_vs_champion: 0.5638 (limit <= champion 0.5562 x (1 + 0.01))"
+      ],
+      "source": "simulation",
+      "ts": "2026-11-24T10:28:36Z",
+      "version": "3"
+    },
+    {
+      "candidate": "v4 uncalibrated",
+      "challenger": {
+        "brier": 0.1764355805589777,
+        "business_cost": 0.5553333333333333,
+        "ece": 0.19027451766006553,
+        "pr_auc": 0.5598896433635852,
+        "recall": 0.7754333082140166,
+        "roc_auc": 0.7812862487786384,
+        "threshold": 0.375
+      },
+      "champion": {
+        "brier": 0.13457139932206447,
+        "business_cost": 0.5561666666666667,
+        "ece": 0.014162510484026308,
+        "pr_auc": 0.5598896433635852,
+        "recall": 0.7776940467219292,
+        "roc_auc": 0.7812862487786384,
+        "threshold": 0.16
+      },
+      "checks": [
+        {
+          "group": "performance",
+          "limit": ">= 0.7",
+          "name": "roc_auc_floor",
+          "passed": true,
+          "skipped": false,
+          "value": 0.7812862487786384
+        },
+        {
+          "group": "performance",
+          "limit": ">= 0.45",
+          "name": "pr_auc_floor",
+          "passed": true,
+          "skipped": false,
+          "value": 0.5598896433635852
+        },
+        {
+          "group": "calibration",
+          "limit": "<= 0.05",
+          "name": "ece_ceiling",
+          "passed": false,
+          "skipped": false,
+          "value": 0.19027451766006553
+        },
+        {
+          "group": "performance",
+          "limit": ">= champion 0.5599 - 0.005",
+          "name": "pr_auc_vs_champion",
+          "passed": true,
+          "skipped": false,
+          "value": 0.5598896433635852
+        },
+        {
+          "group": "calibration",
+          "limit": "<= champion 0.1346 + 0.002",
+          "name": "brier_vs_champion",
+          "passed": false,
+          "skipped": false,
+          "value": 0.1764355805589777
+        },
+        {
+          "group": "cost",
+          "limit": "<= champion 0.5562 x (1 + 0.01)",
+          "name": "cost_vs_champion",
+          "passed": true,
+          "skipped": false,
+          "value": 0.5553333333333333
+        },
+        {
+          "group": "operational",
+          "limit": "API columns unchanged",
+          "name": "input_contract",
+          "passed": true,
+          "skipped": false,
+          "value": "True"
+        },
+        {
+          "group": "operational",
+          "limit": "finite, in [0, 1]",
+          "name": "probabilities_valid",
+          "passed": true,
+          "skipped": false,
+          "value": "True"
+        },
+        {
+          "group": "operational",
+          "limit": "same input -> same output",
+          "name": "deterministic",
+          "passed": true,
+          "skipped": false,
+          "value": "True"
+        },
+        {
+          "group": "operational",
+          "limit": "in (0, 1)",
+          "name": "threshold_valid",
+          "passed": true,
+          "skipped": false,
+          "value": 0.375
+        },
+        {
+          "group": "operational",
+          "limit": "<= 50 ms (single row, in-process)",
+          "name": "p95_latency_ms",
+          "passed": true,
+          "skipped": false,
+          "value": 5.483450900055686
+        },
+        {
+          "group": "operational",
+          "limit": "<= 50 MB",
+          "name": "bundle_size_mb",
+          "passed": true,
+          "skipped": false,
+          "value": 0.298994
+        }
+      ],
+      "description": "Same base model as v2 served without calibration (scores inflated by class weights).",
+      "event": "reject",
+      "id": 4,
+      "production_after": "2",
+      "production_before": "2",
+      "reasons": [
+        "[FAIL] calibration/ece_ceiling: 0.1903 (limit <= 0.05)",
+        "[FAIL] calibration/brier_vs_champion: 0.1764 (limit <= champion 0.1346 + 0.002)"
+      ],
+      "source": "simulation",
+      "ts": "2026-11-24T10:28:37Z",
+      "version": "4"
+    },
+    {
+      "event": "rollback",
+      "from_version": "2",
+      "id": 5,
+      "reasons": [
+        "simulated incident: a downstream system reports an unexpected decline-rate jump after v2 went live; roll back while it is investigated"
+      ],
+      "source": "registry",
+      "to_version": "1",
+      "ts": "2026-11-24T10:28:37Z"
+    }
+  ]
+}

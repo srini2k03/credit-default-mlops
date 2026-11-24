@@ -29,29 +29,33 @@ Render's free tier sleeps when idle, so the first request after a pause takes ab
 ## Results
 
 <!-- RESULTS:START -->
-Real UCI data (30,000 rows, default rate 22.1%), test holdout n = 6,000. Generated 2026-11-03T13:40:05Z by the [train workflow run](https://github.com/srini2k03/credit-default-mlops/actions/runs/41645854230) at commit `d2d7669`. Costs FN:FP = 5:1.
+Real UCI data (30,000 rows, default rate 22.1%), test holdout n = 6,000. Generated 2026-11-24T10:28:04Z by the [train workflow run](https://github.com/srini2k03/credit-default-mlops/actions/runs/45371941736) at commit `48a6a54`. Costs FN:FP = 5:1.
 
 | Model | ROC-AUC | PR-AUC | F1 | Brier | Cost / applicant | Threshold |
 |---|---|---|---|---|---|---|
-| logreg | 0.740 | 0.478 | 0.471 | 0.143 | 0.601 | 0.13 |
-| **lightgbm** (champion) | 0.778 | 0.536 | 0.488 | 0.135 | 0.562 | 0.13 |
-| xgboost | 0.780 | 0.535 | 0.490 | 0.136 | 0.568 | 0.17 |
+| logreg | 0.733 | 0.474 | 0.459 | 0.144 | 0.620 | 0.11 |
+| random_forest | 0.779 | 0.555 | 0.482 | 0.136 | 0.562 | 0.14 |
+| **lightgbm** (champion) | 0.781 | 0.559 | 0.488 | 0.135 | 0.558 | 0.16 |
+| xgboost | 0.780 | 0.555 | 0.503 | 0.136 | 0.569 | 0.17 |
+| catboost | 0.782 | 0.563 | 0.504 | 0.135 | 0.559 | 0.17 |
 
 Champion at different decision thresholds (test holdout):
 
 | Threshold rule | Threshold | Cost / applicant | Recall | Approval rate | F1 |
 |---|---|---|---|---|---|
-| cost-optimal | 0.13 | 0.562 | 0.766 | 0.526 | 0.488 |
-| 0.5 | 0.50 | 0.759 | 0.347 | 0.886 | 0.458 |
-| max-F1 | 0.39 | 0.619 | 0.524 | 0.792 | 0.539 |
+| cost-optimal | 0.16 | 0.558 | 0.777 | 0.517 | 0.488 |
+| 0.5 | 0.50 | 0.752 | 0.354 | 0.883 | 0.464 |
+| max-F1 | 0.33 | 0.629 | 0.512 | 0.798 | 0.534 |
 
 Imbalance ablation (CV PR-AUC on the training split):
 
 | Model | none | class_weight | smote |
 |---|---|---|---|
-| logreg | 0.515 | 0.513 | 0.514 |
-| lightgbm | 0.564 | 0.564 | 0.560 |
-| xgboost | 0.569 | 0.568 | 0.553 |
+| logreg | 0.513 | 0.512 | 0.514 |
+| random_forest | 0.567 | 0.567 | 0.554 |
+| lightgbm | 0.563 | 0.565 | 0.559 |
+| xgboost | 0.567 | 0.568 | 0.549 |
+| catboost | 0.563 | 0.566 | 0.558 |
 <!-- RESULTS:END -->
 
 Full report: [`results/metrics.md`](results/metrics.md), quality gate:
