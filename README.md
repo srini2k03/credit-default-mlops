@@ -214,6 +214,7 @@ Errors return JSON with the request ID: 422 (validation, FastAPI's usual body), 
 | `benchmark.yml` | after `train`, dispatch | serving benchmark on a GitHub-hosted runner → `results/benchmarks/` |
 | `pages.yml` | after `train`/`retrain`, push to results or site code | Evidently reports, MLflow screenshots, dashboard build, browser checks (blocks the deploy), publish to `gh-pages` |
 | `live-smoke.yml` | weekly, dispatch | wakes the Render service and smoke-tests every endpoint |
+| `render-deploy.yml` | push to served code/model, dispatch | calls the Render deploy hook (secret `RENDER_DEPLOY_HOOK_URL`), waits until the live API reports the committed model, then smoke-tests it; a no-op until the secret is set |
 
 ## Limitations
 
@@ -229,6 +230,10 @@ Errors return JSON with the request ID: 422 (validation, FastAPI's usual body), 
   the excluded attributes remain.
 - **Free hosting.** Render's free tier sleeps and has 512 MB RAM; the benchmark runs on a CI
   runner, not on Render. The prediction log on Render is ephemeral.
+- **Live API lags `main` until the deploy hook is set.** A service created from the "Deploy to
+  Render" button is not redeployed on push; until `RENDER_DEPLOY_HOOK_URL` is added (Render →
+  service → Settings → Deploy Hook), the live API keeps serving the model and code it was first
+  deployed with, and the dashboard's Predict page falls back to its precomputed examples.
 - **Registry durability.** CI's MLflow store is per run; the git history of `models/bundled/`
   and `results/governance/history.json` are the durable record.
 

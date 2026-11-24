@@ -1,0 +1,66 @@
+name: render-deploy
+
+# Keeps the live API on Render in step with main. A service created from the README's
+# "Deploy to Render" button is not redeployed when main changes, so this workflow calls the
+# service's deploy hook whenever the served code or model changes, waits until the live API
+# reports the committed model, and then runs the same smoke test as live-smoke.yml.
+#
+# One-time setup: Render dashboard -> credit-default-api -> Settings -> Deploy Hook -> copy the
+# URL into the repository secret RENDER_DEPLOY_HOOK_URL. Without the secret this workflow only
+# prints a notice, so it never fails CI.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/credit_default/**"
+      - "models/bundled/**"
+      - "pyproject.toml"
+      - "render.yaml"
+      - "scripts/render_build.sh"
+  workflow_dispatch:
+
+concurrency:
+  group: render-deploy
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      BASE: https://credit-default-api-fkqg.onrender.com
+      HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Trigger the Render deploy hook
+        id: hook
+        run: |
+          if [ -z "$HOOK" ]; then
+            echo "::notice::RENDER_DEPLOY_HOOK_URL is not set, so the live API was not redeployed (see the comment at the top of this workflow)."
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          curl -fsS -o /dev/null -X POST "$HOOK"
+          echo "enabled=true" >> "$GITHUB_OUTPUT"
+
+      - name: Wait until the live API serves the committed model
+        if: steps.hook.outputs.enabled == 'true'
+        run: |
+          want="local:$(python3 -c 'import json; print(str(json.load(open("models/bundled/metadata.json"))["git_commit"])[:10])')"
+          echo "expecting model_version $want"
+          for i in $(seq 1 50); do
+            got=$(curl -fsS -m 30 "$BASE/health" 2>/dev/null | python3 -c 'import json, sys; print(json.load(sys.stdin).get("model_version", ""))' 2>/dev/null || true)
+            echo "attempt $i: ${got:-no response}"
+            [ "$got" = "$want" ] && exit 0
+            sleep 30
+          done
+          echo "::error::The live API did not report $want within 25 minutes; check the deploy log in the Render dashboard."
+          exit 1
+
+      - name: Smoke test
+        if: steps.hook.outputs.enabled == 'true'
+        run: bash scripts/smoke_api.sh "$BASE"
