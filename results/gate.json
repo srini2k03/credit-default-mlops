@@ -49,7 +49,7 @@
     },
     {
       "group": "performance",
-      "limit": ">= champion 0.5362 - 0.005",
+      "limit": ">= champion 0.5594 - 0.005",
       "name": "pr_auc_vs_champion",
       "passed": true,
       "skipped": false,
@@ -57,7 +57,7 @@
     },
     {
       "group": "calibration",
-      "limit": "<= champion 0.1353 + 0.002",
+      "limit": "<= champion 0.1346 + 0.002",
       "name": "brier_vs_champion",
       "passed": true,
       "skipped": false,
@@ -65,7 +65,7 @@
     },
     {
       "group": "cost",
-      "limit": "<= champion 0.5625 x (1 + 0.01)",
+      "limit": "<= champion 0.5578 x (1 + 0.01)",
       "name": "cost_vs_champion",
       "passed": true,
       "skipped": false,
@@ -109,7 +109,7 @@
       "name": "p95_latency_ms",
       "passed": true,
       "skipped": false,
-      "value": 6.581196350009577
+      "value": 7.344933849969945
     },
     {
       "group": "operational",
@@ -117,31 +117,31 @@
       "name": "bundle_size_mb",
       "passed": true,
       "skipped": false,
-      "value": 0.299955
+      "value": 0.29995
     }
   ],
   "passed": true,
   "production": {
-    "approval_rate": 0.5263333333333333,
-    "balanced_accuracy": 0.687924473046672,
-    "brier": 0.13528513175200244,
-    "business_cost": 0.5625,
-    "ece": 0.023304108862886422,
-    "f1": 0.4878867834012952,
-    "fn": 310,
-    "fnr": 0.23360964581763377,
-    "fp": 1825,
-    "fpr": 0.39054140808902205,
-    "log_loss": 0.4610685673822146,
+    "approval_rate": 0.517,
+    "balanced_accuracy": 0.6887056284309598,
+    "brier": 0.13459576317553015,
+    "business_cost": 0.5578333333333333,
+    "ece": 0.014579210571682358,
+    "f1": 0.48804733727810656,
+    "fn": 296,
+    "fnr": 0.22305953278070836,
+    "fp": 1867,
+    "fpr": 0.39952921035737216,
+    "log_loss": 0.42869055924216515,
     "n": 6000,
-    "pr_auc": 0.5362360848350324,
-    "precision": 0.3578465869106263,
-    "recall": 0.7663903541823662,
-    "roc_auc": 0.7780548714891348,
-    "specificity": 0.609458591910978,
-    "threshold": 0.13,
-    "tn": 2848,
-    "tp": 1017
+    "pr_auc": 0.5594440755548019,
+    "precision": 0.3557625948930297,
+    "recall": 0.7769404672192917,
+    "roc_auc": 0.7807051394831634,
+    "specificity": 0.6004707896426279,
+    "threshold": 0.16,
+    "tn": 2806,
+    "tp": 1031
   },
   "production_ref": "models:/credit-default@production (v1)",
   "reasons": [

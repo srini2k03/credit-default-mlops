@@ -1,6 +1,6 @@
 # Drift scenarios and monitoring decisions
 
-Generated 2026-11-24T10:28:22Z at commit `48a6a54a17`. Reference: training split (n = 18,000); batches of 3,000 rows simulated from the test split. Model: lightgbm (cutoff 0.160).
+Generated 2026-11-24T11:19:15Z at commit `1faa0a8f8f`. Reference: training split (n = 18,000); batches of 3,000 rows simulated from the test split. Model: lightgbm (cutoff 0.160).
 
 Policy: block if any column misses > 2% or unseen codes appear; retrain if > 30% of features drift (PSI >= 0.2, or >= 0.1 with p < 0.01), prediction PSI >= 0.2, or (with >= 1000 labels) ROC-AUC drops > 0.03, the calibration gap exceeds +/-0.05, or the deployed cutoff costs > 5% more than the batch-optimal one.
 

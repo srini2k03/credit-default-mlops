@@ -48,7 +48,7 @@ model selection.
 Full model-comparison table (written by `train.yml`):
 
 <!-- RESULTS:START -->
-Real UCI data (30,000 rows, default rate 22.1%), test holdout n = 6,000. Generated 2026-11-24T10:28:04Z by the [train workflow run](https://github.com/srini2k03/credit-default-mlops/actions/runs/45371941736) at commit `48a6a54`. Costs FN:FP = 5:1.
+Real UCI data (30,000 rows, default rate 22.1%), test holdout n = 6,000. Generated 2026-11-24T11:18:56Z by the [train workflow run](https://github.com/srini2k03/credit-default-mlops/actions/runs/45379624037) at commit `1faa0a8`. Costs FN:FP = 5:1.
 
 | Model | ROC-AUC [95% CI] | PR-AUC [95% CI] | F1 | Brier | Cost / applicant | Threshold |
 |---|---|---|---|---|---|---|

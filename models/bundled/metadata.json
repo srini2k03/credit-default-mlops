@@ -23,8 +23,8 @@
     "AGE"
   ],
   "family": "lightgbm",
-  "generated_at": "2026-11-24T10:28:04Z",
-  "git_commit": "48a6a54a17e06fc3d9ac328effbccd87ef4e98c5",
+  "generated_at": "2026-11-24T11:18:56Z",
+  "git_commit": "1faa0a8f8f0dc0fe2839bf8f57a84175550defc8",
   "imbalance": "class_weight",
   "params": {
     "colsample_bytree": 0.8837023223348958,

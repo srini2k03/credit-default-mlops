@@ -273,7 +273,7 @@
           0.7495159263617526
         ]
       },
-      "tuning_seconds": 6.6,
+      "tuning_seconds": 6.5,
       "validation": {
         "approval_rate": 0.522,
         "balanced_accuracy": 0.6849898446591038,
@@ -355,13 +355,13 @@
           0.7934069171277026
         ]
       },
-      "tuning_seconds": 513.9,
+      "tuning_seconds": 525.0,
       "validation": {
         "approval_rate": 0.5126666666666667,
         "balanced_accuracy": 0.7022335941387516,
         "brier": 0.13242338701833714,
         "business_cost": 0.5283333333333333,
-        "ece": 0.016463557577378395,
+        "ece": 0.01646355757737837,
         "f1": 0.5007058823529412,
         "fn": 131,
         "fnr": 0.1975867269984917,
@@ -441,7 +441,7 @@
           0.7947736649040141
         ]
       },
-      "tuning_seconds": 54.1,
+      "tuning_seconds": 54.7,
       "validation": {
         "approval_rate": 0.5276666666666666,
         "balanced_accuracy": 0.7070208353905401,
@@ -526,7 +526,7 @@
           0.7943527174580004
         ]
       },
-      "tuning_seconds": 36.1,
+      "tuning_seconds": 35.9,
       "validation": {
         "approval_rate": 0.609,
         "balanced_accuracy": 0.713723941240365,
@@ -608,7 +608,7 @@
           0.7964315801254331
         ]
       },
-      "tuning_seconds": 249.7,
+      "tuning_seconds": 264.8,
       "validation": {
         "approval_rate": 0.5993333333333334,
         "balanced_accuracy": 0.7172003787196719,
@@ -633,8 +633,8 @@
       }
     }
   ],
-  "generated_at": "2026-11-24T10:28:04Z",
-  "git_commit": "48a6a54a17e06fc3d9ac328effbccd87ef4e98c5",
+  "generated_at": "2026-11-24T11:18:56Z",
+  "git_commit": "1faa0a8f8f0dc0fe2839bf8f57a84175550defc8",
   "imbalance": "class_weight",
   "selection_rule": "lowest expected cost per applicant on validation among deployable families; validation PR-AUC breaks ties",
   "skipped_families": [],
@@ -753,7 +753,7 @@
       "tp": 679
     }
   ],
-  "train_seconds": 1042.4,
+  "train_seconds": 1074.2,
   "validation": {
     "approval_rate": 0.5276666666666666,
     "balanced_accuracy": 0.7070208353905401,

@@ -631,8 +631,8 @@
     "note": "Duplicates are kept: identical feature vectors are plausible for distinct customers (e.g. unused cards with all-zero balances), and IDs are unique.",
     "rows_in_duplicate_groups": 108
   },
-  "generated_at": "2026-11-24T10:10:30Z",
-  "git_commit": "48a6a54a17e06fc3d9ac328effbccd87ef4e98c5",
+  "generated_at": "2026-11-24T11:00:49Z",
+  "git_commit": "1faa0a8f8f0dc0fe2839bf8f57a84175550defc8",
   "leakage": {
     "checks": [
       {

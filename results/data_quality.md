@@ -1,6 +1,6 @@
 # Data-quality report
 
-Generated 2026-11-24T10:10:30Z at commit `48a6a54a17` from `data/raw/credit_default.csv` (sha256 `af6aa9d50511...`).
+Generated 2026-11-24T11:00:49Z at commit `1faa0a8f8f` from `data/raw/credit_default.csv` (sha256 `af6aa9d50511...`).
 
 - Rows: 30,000; columns: 25; default rate: 22.12%
 - Schema contract (Pandera): **PASS**

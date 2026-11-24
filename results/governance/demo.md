@@ -1,6 +1,6 @@
 # Champion/challenger simulation
 
-Generated 2026-11-24T10:28:37Z at commit `48a6a54a17`. Simulation in a temporary MLflow registry on the real train/test splits; the served model is not touched.
+Generated 2026-11-24T11:19:31Z at commit `1faa0a8f8f`. Simulation in a temporary MLflow registry on the real train/test splits; the served model is not touched.
 
 | # | Event | Candidate | Version | Production before -> after | PR-AUC | Brier | ECE | Cost / applicant | Failed checks |
 |---|---|---|---|---|---|---|---|---|---|
@@ -16,6 +16,6 @@ Generated 2026-11-24T10:28:37Z at commit `48a6a54a17`. Simulation in a temporary
 - **v2 retrained**: Tuned hyper-parameters, all training rows (new labelled outcomes). -> promote
 - **v3 noisy labels**: Same recipe, but the outcome feed recorded 40% of defaults as repaid. -> reject
 - **v4 uncalibrated**: Same base model as v2 served without calibration (scores inflated by class weights). -> reject
-- **rollback**: simulated incident: a downstream system reports an unexpected decline-rate jump after v2 went live; roll back while it is investigated
+- **rollback**: simulated incident: a downstream system reports an unexpected decline-rate jump after the latest promotion; roll back while it is investigated
 
 Final aliases: @production -> v1, @previous-production -> v2.

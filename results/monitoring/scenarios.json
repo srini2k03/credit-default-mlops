@@ -6,12 +6,12 @@
     "recall": 0.7769404672192917,
     "roc_auc": 0.7807051394831634
   },
-  "generated_at": "2026-11-24T10:28:22Z",
-  "git_commit": "48a6a54a17e06fc3d9ac328effbccd87ef4e98c5",
+  "generated_at": "2026-11-24T11:19:15Z",
+  "git_commit": "1faa0a8f8f0dc0fe2839bf8f57a84175550defc8",
   "model": {
     "family": "lightgbm",
-    "generated_at": "2026-11-24T10:28:04Z",
-    "git_commit": "48a6a54a17e06fc3d9ac328effbccd87ef4e98c5",
+    "generated_at": "2026-11-24T11:18:56Z",
+    "git_commit": "1faa0a8f8f0dc0fe2839bf8f57a84175550defc8",
     "threshold": 0.16
   },
   "policy": {

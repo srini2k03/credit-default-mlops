@@ -2,7 +2,7 @@
 
 
 - Data: `uci` (30000 rows, default rate 0.221, sha256 `af6aa9d50511...`)
-- Generated: 2026-11-24T10:28:04Z from commit `48a6a54a17`
+- Generated: 2026-11-24T11:18:56Z from commit `1faa0a8f8f`
 - Splits: train 18000 / calibration 3000 / validation 3000 / test 6000
 - Costs: FN = 5.0, FP = 1.0 (Bayes threshold for calibrated scores = 0.167)
 - Imbalance handling: `class_weight`; champion: **lightgbm** (calibration: sigmoid)

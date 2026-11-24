@@ -5,8 +5,8 @@
     "production": "1"
   },
   "final_production_version": "1",
-  "generated_at": "2026-11-24T10:28:37Z",
-  "git_commit": "48a6a54a17e06fc3d9ac328effbccd87ef4e98c5",
+  "generated_at": "2026-11-24T11:19:31Z",
+  "git_commit": "1faa0a8f8f0dc0fe2839bf8f57a84175550defc8",
   "note": "Simulation in a temporary MLflow registry on the real train/test splits; the served model is not touched.",
   "timeline": [
     {
@@ -108,7 +108,7 @@
           "name": "p95_latency_ms",
           "passed": true,
           "skipped": false,
-          "value": 6.623565399956988
+          "value": 7.4160280000114644
         },
         {
           "group": "operational",
@@ -128,7 +128,7 @@
         "no production model: challenger accepted as the first version"
       ],
       "source": "simulation",
-      "ts": "2026-11-24T10:28:31Z",
+      "ts": "2026-11-24T11:19:24Z",
       "version": "1"
     },
     {
@@ -238,7 +238,7 @@
           "name": "p95_latency_ms",
           "passed": true,
           "skipped": false,
-          "value": 6.536513199989713
+          "value": 7.213780250049239
         },
         {
           "group": "operational",
@@ -258,7 +258,7 @@
         "challenger passed every promotion check against production"
       ],
       "source": "simulation",
-      "ts": "2026-11-24T10:28:33Z",
+      "ts": "2026-11-24T11:19:27Z",
       "version": "2"
     },
     {
@@ -368,7 +368,7 @@
           "name": "p95_latency_ms",
           "passed": true,
           "skipped": false,
-          "value": 6.55264874999375
+          "value": 7.5872429000696675
         },
         {
           "group": "operational",
@@ -390,7 +390,7 @@
         "[FAIL] cost/cost_vs_champion: 0.5638 (limit <= champion 0.5562 x (1 + 0.01))"
       ],
       "source": "simulation",
-      "ts": "2026-11-24T10:28:36Z",
+      "ts": "2026-11-24T11:19:30Z",
       "version": "3"
     },
     {
@@ -500,7 +500,7 @@
           "name": "p95_latency_ms",
           "passed": true,
           "skipped": false,
-          "value": 5.483450900055686
+          "value": 6.088342900045518
         },
         {
           "group": "operational",
@@ -521,7 +521,7 @@
         "[FAIL] calibration/brier_vs_champion: 0.1764 (limit <= champion 0.1346 + 0.002)"
       ],
       "source": "simulation",
-      "ts": "2026-11-24T10:28:37Z",
+      "ts": "2026-11-24T11:19:31Z",
       "version": "4"
     },
     {
@@ -529,11 +529,11 @@
       "from_version": "2",
       "id": 5,
       "reasons": [
-        "simulated incident: a downstream system reports an unexpected decline-rate jump after v2 went live; roll back while it is investigated"
+        "simulated incident: a downstream system reports an unexpected decline-rate jump after the latest promotion; roll back while it is investigated"
       ],
       "source": "registry",
       "to_version": "1",
-      "ts": "2026-11-24T10:28:37Z"
+      "ts": "2026-11-24T11:19:31Z"
     }
   ]
 }
