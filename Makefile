@@ -9,7 +9,7 @@ PORT ?= 8000
 
 .PHONY: help install lint format test data fixtures validate train train-synthetic gate gate-synthetic \
         bootstrap publish serve smoke drift drift-synthetic check-drift flow flow-synthetic \
-        loadtest docker-build compose-up compose-down site clean
+        loadtest docker-build compose-up compose-down site clean quality scenarios governance-demo benchmark
 
 help:  ## list targets
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  %-18s %s\n",$$1,$$2}'
@@ -70,7 +70,7 @@ serve:  ## API on :$(PORT) (registry if MLFLOW_TRACKING_URI is set, else models/
 smoke:  ## curl /health, /predict, /predict_batch, /explain on a running API
 	bash scripts/smoke_api.sh http://localhost:$(PORT)
 
-loadtest:  ## 60 s headless Locust run against a running API -> artifacts/loadtest.md
+loadtest:  ## 60 s Locust run against a running API (start it with RATE_LIMIT_PER_MINUTE=0) -> artifacts/loadtest.md
 	mkdir -p artifacts/locust
 	locust -f locust/locustfile.py --headless -u 20 -r 5 -t 60s --host http://localhost:$(PORT) \
 	  --csv artifacts/locust/run --only-summary
@@ -102,3 +102,16 @@ compose-down:
 
 clean:
 	rm -rf artifacts outputs reports site mlruns logs .pytest_cache .ruff_cache
+
+# ---- analysis ---------------------------------------------------------------------------------
+quality:  ## data-quality report -> results/data_quality.{json,md}
+	$(PY) -m credit_default.data.quality
+
+scenarios:  ## drift scenarios + monitoring decisions for the bundled model -> results/monitoring/
+	$(PY) -m credit_default.monitor.scenarios
+
+governance-demo:  ## champion/challenger simulation in a temporary registry -> results/governance/
+	$(PY) -m credit_default.registry.governance demo
+
+benchmark:  ## latency / throughput / memory benchmark -> results/benchmarks/
+	$(PY) -m credit_default.perf.benchmark

@@ -250,14 +250,18 @@ def run_demo(cfg, df: pd.DataFrame, out_dir: Path) -> dict:
             )
             timeline.append(event)
             log.info("%s -> %s (%s)", name, event["event"], "; ".join(decision.reasons))
-        # Incident after the v2 promotion: roll back to the previous production version.
-        rb = rollback_registry(
-            demo_cfg,
-            history_path,
-            "simulated incident: a downstream system reports an unexpected decline-rate jump "
-            "after v2 went live; roll back while it is investigated",
-        )
-        timeline.append(rb)
+        # Incident after the latest promotion: roll back to the previous production version
+        # (only possible if a second version was promoted).
+        if reg.get_version(demo_cfg, demo_cfg.registry.previous_alias) is not None:
+            rb = rollback_registry(
+                demo_cfg,
+                history_path,
+                "simulated incident: a downstream system reports an unexpected decline-rate "
+                "jump after the latest promotion; roll back while it is investigated",
+            )
+            timeline.append(rb)
+        else:
+            log.warning("rollback step skipped: only one version was ever promoted")
         final = reg.get_version(demo_cfg, demo_cfg.registry.production_alias)
         aliases = {
             a: str(reg.get_version(demo_cfg, a).version)
