@@ -95,7 +95,16 @@
   }
   function fmtVal(v) { return Math.abs(v) >= 1000 ? Math.round(v).toLocaleString() : (Math.round(v * 1000) / 1000).toString(); }
 
+  function normalise(res) {
+    // Older API releases return only base_value and the top contributions.
+    var sum = res.contributions.reduce(function (a, c) { return a + c.shap_value; }, 0);
+    if (typeof res.other_features_contribution !== "number") res.other_features_contribution = 0;
+    if (typeof res.raw_score !== "number") res.raw_score = res.base_value + sum + res.other_features_contribution;
+    return res;
+  }
+
   function show(res, cutoff, source, precomputed) {
+    res = normalise(res);
     var box = q("pf-result");
     box.hidden = false;
     var p = res.probability_of_default, decline = p >= cutoff;
@@ -116,8 +125,8 @@
       "Raised the score: " + (up.length ? up.map(esc).join(", ") : "none of the top features") +
       ". Lowered it: " + (down.length ? down.map(esc).join(", ") : "none of the top features") + ". " +
       "Base value " + res.base_value.toFixed(3) + " plus all contributions gives the raw " + space + " score " + res.raw_score.toFixed(3) +
-      " (uncalibrated probability " + (100 * res.uncalibrated_probability).toFixed(1) + "%), which the " + esc(res.calibration || "") +
-      " calibrator maps to " + (100 * p).toFixed(1) + "%. Contributions describe this model's arithmetic, not causes.";
+      (typeof res.uncalibrated_probability === "number" ? " (uncalibrated probability " + (100 * res.uncalibrated_probability).toFixed(1) + "%)" : "") +
+      ", which the " + esc(res.calibration || "") + " calibrator maps to " + (100 * p).toFixed(1) + "%. Contributions describe this model's arithmetic, not causes.";
     waterfall(q("pf-waterfall"), res);
     box.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "nearest" });
   }
