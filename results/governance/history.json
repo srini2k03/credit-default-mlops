@@ -1,0 +1,30 @@
+[
+  {
+    "id": 1,
+    "ts": "2026-11-03T13:40:05Z",
+    "event": "promote",
+    "source": "train workflow",
+    "trigger": "manual",
+    "run_url": "https://github.com/srini2k03/credit-default-mlops/actions/runs/41645854230",
+    "git_commit": "d2d766943ec531e12e393c6682ad462a8c99ff82",
+    "challenger": {
+      "ref": "models:/credit-default@staging (v1)",
+      "family": "lightgbm",
+      "calibration": "isotonic",
+      "roc_auc": 0.7780548714891348,
+      "pr_auc": 0.5362360848350324,
+      "brier": 0.13528513175200244,
+      "business_cost": 0.5625,
+      "recall": 0.7663903541823662,
+      "threshold": 0.13
+    },
+    "production_before": {
+      "ref": "none"
+    },
+    "failed_checks": [],
+    "reasons": [
+      "no production model: challenger accepted as the first version"
+    ],
+    "note": "Backfilled from results/gate.json and results/metrics.json of that run (the history file did not exist yet; the gate then checked PR-AUC and cost only)."
+  }
+]
