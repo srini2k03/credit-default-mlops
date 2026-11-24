@@ -26,15 +26,22 @@ def render(m: dict, run_url: str | None = None) -> str:
         f"test holdout n = {d['n_test']:,}. Generated {m['generated_at']} by the {src} "
         f"at commit `{m['git_commit'][:7]}`. Costs FN:FP = {m['cost']['fn_cost']:g}:{m['cost']['fp_cost']:g}.",
         "",
-        "| Model | ROC-AUC | PR-AUC | F1 | Brier | Cost / applicant | Threshold |",
+        "| Model | ROC-AUC [95% CI] | PR-AUC [95% CI] | F1 | Brier | Cost / applicant | Threshold |",
         "|---|---|---|---|---|---|---|",
     ]
+
+    def ci(f, k):
+        c = f.get("test_ci95", {}).get(k)
+        return f" [{c[0]:.3f}, {c[1]:.3f}]" if c else ""
+
     for f in m["families"]:
         t = f["test"]
         name = f"**{f['family']}** (champion)" if f["family"] == m["champion"] else f["family"]
+        if not f.get("deployable", True):
+            name += " (research only)"
         lines.append(
-            f"| {name} | {t['roc_auc']:.3f} | {t['pr_auc']:.3f} | {t['f1']:.3f} | {t['brier']:.3f} "
-            f"| {t['business_cost']:.3f} | {t['threshold']:.2f} |"
+            f"| {name} | {t['roc_auc']:.3f}{ci(f, 'roc_auc')} | {t['pr_auc']:.3f}{ci(f, 'pr_auc')} "
+            f"| {t['f1']:.3f} | {t['brier']:.3f} | {t['business_cost']:.3f} | {t['threshold']:.2f} |"
         )
     lines += [
         "",

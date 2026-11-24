@@ -3,41 +3,60 @@
 [![ci](https://github.com/srini2k03/credit-default-mlops/actions/workflows/ci.yml/badge.svg)](https://github.com/srini2k03/credit-default-mlops/actions/workflows/ci.yml)
 [![train](https://github.com/srini2k03/credit-default-mlops/actions/workflows/train.yml/badge.svg)](https://github.com/srini2k03/credit-default-mlops/actions/workflows/train.yml)
 [![pages](https://github.com/srini2k03/credit-default-mlops/actions/workflows/pages.yml/badge.svg)](https://github.com/srini2k03/credit-default-mlops/actions/workflows/pages.yml)
+[![benchmark](https://github.com/srini2k03/credit-default-mlops/actions/workflows/benchmark.yml/badge.svg)](https://github.com/srini2k03/credit-default-mlops/actions/workflows/benchmark.yml)
 
-[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/srini2k03/credit-default-mlops)
+Credit-card default prediction run as a complete ML lifecycle: validated and versioned data,
+five model families compared under one protocol, calibrated probabilities, a **cost-sensitive
+decision engine**, **champion/challenger governance** with a multi-check promotion gate and
+rollback, drift monitoring with an explicit action policy, group-level fairness reporting, a
+hardened FastAPI service, serving benchmarks, and a static dashboard rebuilt by CI.
 
-A production-style ML system that predicts whether a credit-card customer will default next
-month, and turns the prediction into an approve/decline decision that minimises expected cost
-for the lender. It covers the full lifecycle: versioned, validated data; tuned and calibrated
-models; a cost-based decision threshold; MLflow tracking and a model registry with a quality
-gate; a FastAPI service with SHAP explanations; load testing; drift monitoring with automated
-retraining; and CI/CD to GHCR, Render and GitHub Pages.
+> Educational decision-support project on a public 2005 dataset. Costs are stated assumptions in
+> relative units; expected-cost changes are model-evaluation quantities, not financial savings,
+> and nothing here is an approved lending or credit-scoring system.
 
 **Data:** [UCI Default of Credit Card Clients](https://archive.ics.uci.edu/dataset/350/default+of+credit+card+clients)
-(Yeh & Lien, 2009; CC BY 4.0). 30,000 Taiwanese card holders, 23 features, 22.1% default rate.
+(Yeh & Lien, 2009; CC BY 4.0). 30,000 Taiwanese card holders, 23 input columns, 22.1% default rate.
 
 ## Live links
 
 | What | Where |
 |---|---|
-| API (Swagger UI) | https://credit-default-api-fkqg.onrender.com/docs (health: https://credit-default-api-fkqg.onrender.com/health; checked weekly by the `live-smoke` workflow) |
-| Monitoring and results site | https://srini2k03.github.io/credit-default-mlops/ (Evidently drift reports, metrics, gate, load test, MLflow summary and screenshots) |
-| Container image | `ghcr.io/srini2k03/credit-default-mlops:latest` (pushed by `ci.yml` on every push to `main`) |
+| Dashboard | https://srini2k03.github.io/credit-default-mlops/ (overview, [predict](https://srini2k03.github.io/credit-default-mlops/predict.html), [evaluation](https://srini2k03.github.io/credit-default-mlops/evaluation.html), [monitoring](https://srini2k03.github.io/credit-default-mlops/monitoring.html), [registry](https://srini2k03.github.io/credit-default-mlops/registry.html)) |
+| API (Swagger UI) | https://credit-default-api-fkqg.onrender.com/docs (Render free tier: the first request after idle takes 30-60 s; checked by the `live-smoke` workflow) |
+| Container image | `ghcr.io/srini2k03/credit-default-mlops:latest` (pushed by `ci.yml` on `main`) |
 
-Render's free tier sleeps when idle, so the first request after a pause takes about 30-60 s.
+## Headline results
 
-## Results
+All numbers come from committed files written by CI runs on the real data; the source is given
+next to each. Test split n = 6,000, never used for training, calibration, cutoff choice or
+model selection.
+
+| What | Result | Source |
+|---|---|---|
+| Champion | LightGBM, Platt (sigmoid) calibration, cutoff 0.16 | `results/metrics.json`, train run [45371941736](https://github.com/srini2k03/credit-default-mlops/actions/runs/45371941736) |
+| Ranking | ROC-AUC 0.781 [0.766, 0.795], PR-AUC 0.559 [0.534, 0.585] (bootstrap 95% CI) | same |
+| Calibration | Brier 0.1346, ECE 0.015 (uncalibrated: 0.1766 / 0.190) | same |
+| Decision at FN:FP = 5:1 | expected cost per applicant 0.558 vs 0.752 at the 0.5 cutoff (−25.9%); default recall 35.4% → 77.7% | `results/decision.json` |
+| Model comparison | LightGBM, random forest, XGBoost and CatBoost are within each other's CIs; logistic regression is clearly worse (PR-AUC 0.474) | `results/metrics.md` |
+| Promotion gate | new champion passed all 12 checks against the previous production model (PR-AUC 0.536 → 0.559, cost 0.5625 → 0.5578) | `results/gate.md` |
+| Governance simulation | baseline and retrained candidates promoted; a 40%-label-noise candidate and an uncalibrated candidate rejected; rollback restored the previous version | `results/governance/demo.md` |
+| Drift policy | 7 simulated batches: control → no action; broken feed and new category codes → blocked; prior shift and concept drift → retrain once labels arrive | `results/monitoring/scenarios.md` |
+| Serving | fast scoring path bit-identical to the sklearn pipeline on all 6,000 test rows; single-row p50 6.69 → 0.93 ms; one uvicorn worker, 4 clients: 102.6 → 330.3 req/s, p95 51.2 → 14.8 ms | `results/benchmarks/benchmark.md`, run [45375530277](https://github.com/srini2k03/credit-default-mlops/actions/runs/45375530277) |
+| Load test | Locust, 20 users, 60 s against the Docker image: 4,842 requests, 0 failures, p95 210 ms | `results/loadtest.md` |
+
+Full model-comparison table (written by `train.yml`):
 
 <!-- RESULTS:START -->
 Real UCI data (30,000 rows, default rate 22.1%), test holdout n = 6,000. Generated 2026-11-24T10:28:04Z by the [train workflow run](https://github.com/srini2k03/credit-default-mlops/actions/runs/45371941736) at commit `48a6a54`. Costs FN:FP = 5:1.
 
-| Model | ROC-AUC | PR-AUC | F1 | Brier | Cost / applicant | Threshold |
+| Model | ROC-AUC [95% CI] | PR-AUC [95% CI] | F1 | Brier | Cost / applicant | Threshold |
 |---|---|---|---|---|---|---|
-| logreg | 0.733 | 0.474 | 0.459 | 0.144 | 0.620 | 0.11 |
-| random_forest | 0.779 | 0.555 | 0.482 | 0.136 | 0.562 | 0.14 |
-| **lightgbm** (champion) | 0.781 | 0.559 | 0.488 | 0.135 | 0.558 | 0.16 |
-| xgboost | 0.780 | 0.555 | 0.503 | 0.136 | 0.569 | 0.17 |
-| catboost | 0.782 | 0.563 | 0.504 | 0.135 | 0.559 | 0.17 |
+| logreg | 0.733 [0.716, 0.750] | 0.474 [0.450, 0.500] | 0.459 | 0.144 | 0.620 | 0.11 |
+| random_forest | 0.779 [0.765, 0.793] | 0.555 [0.530, 0.581] | 0.482 | 0.136 | 0.562 | 0.14 |
+| **lightgbm** (champion) | 0.781 [0.766, 0.795] | 0.559 [0.534, 0.585] | 0.488 | 0.135 | 0.558 | 0.16 |
+| xgboost | 0.780 [0.765, 0.794] | 0.555 [0.528, 0.581] | 0.503 | 0.136 | 0.569 | 0.17 |
+| catboost (research only) | 0.782 [0.768, 0.796] | 0.563 [0.538, 0.588] | 0.504 | 0.135 | 0.559 | 0.17 |
 
 Champion at different decision thresholds (test holdout):
 
@@ -58,254 +77,187 @@ Imbalance ablation (CV PR-AUC on the training split):
 | catboost | 0.563 | 0.566 | 0.558 |
 <!-- RESULTS:END -->
 
-Full report: [`results/metrics.md`](results/metrics.md), quality gate:
-[`results/gate.md`](results/gate.md), load test: [`results/loadtest.md`](results/loadtest.md)
-(p50/p95/p99 per endpoint, filled by `train.yml`).
+## Screenshots (real data, captured from the built dashboard)
 
-## Business framing
+| Decision slider on real held-out predictions | Prediction with SHAP waterfall (precomputed by the committed model) |
+|---|---|
+| ![Cost and cutoff slider](docs/images/dashboard-decision-slider.png) | ![Prediction page](docs/images/dashboard-predict.png) |
+| **Drift scenarios and policy actions** | **Champion/challenger simulation** |
+| ![Drift scenarios](docs/images/dashboard-drift-scenarios.png) | ![Governance](docs/images/dashboard-governance.png) |
 
-The model's job is a decision, not a score. Two errors have different prices:
-
-- **False negative** (approve a customer who defaults): the bank loses the exposure at default
-  times the loss given default (LGD).
-- **False positive** (decline a customer who would have repaid): the bank loses the margin it
-  would have earned on that customer.
-
-Costs are set in [`configs/cost/default.yaml`](configs/cost/default.yaml) in relative units of
-one lost margin: **FN = 5, FP = 1**. The ratio is an assumption, stated so it can be argued
-with: as rough industry figures, card loss given default is 60-80% of the balance, while annual
-net margin is 10-15% of it, which gives ratios between about 4:1 and 8:1. 5:1 sits at the
-conservative end. Change one line of config, or pass `cost.fn_cost=8` on the command line, and
-the whole pipeline re-optimises.
-
-The **business cost** metric is the expected cost per applicant,
-`(FN x 5 + FP x 1) / n`. With calibrated probabilities the theoretical optimum threshold is
-`FP / (FP + FN) = 1/6 ≈ 0.17`; the pipeline still picks the threshold empirically on a
-validation split (robust to residual miscalibration) and reports the cost-optimal threshold
-next to the naive 0.5 and the max-F1 threshold, on the untouched test holdout. The
-cost-vs-threshold curve is in `results/figures/cost_curve.png` after the first training run.
+MLflow UI screenshots (runs table and registry aliases) are captured by `pages.yml` and shown on
+the [registry page](https://srini2k03.github.io/credit-default-mlops/registry.html).
 
 ## Architecture
 
 ```mermaid
 flowchart LR
   subgraph Data
-    UCI[UCI archive zip] -->|fallback| MIR[pinned GitHub LFS mirrors]
-    UCI --> DL[download + sha256 check]
-    MIR --> DL
-    DL --> DVC[(DVC: dvc.lock + local remote)]
-    DVC --> VAL[Pandera contract<br/>pipeline stops on violation]
+    UCI[UCI zip / pinned mirrors] --> DL[download + sha256]
+    DL --> DVC[(DVC)]
+    DVC --> VAL[Pandera contract]
+    VAL --> DQ[data-quality + leakage report]
   end
-  subgraph Train["Train (Prefect flow / train.yml)"]
-    VAL --> FE[feature engineering]
-    FE --> OPT[Optuna: LogReg, LightGBM, XGBoost<br/>CV PR-AUC, class weights vs SMOTE-in-folds]
-    OPT --> CAL[isotonic calibration]
-    CAL --> THR[cost-optimal threshold]
-    THR --> EVAL[ROC-AUC, PR-AUC, F1, Brier, cost<br/>SHAP plots]
+  subgraph Train["train.yml (Prefect flow locally)"]
+    VAL --> FE[row-wise features<br/>SEX/MARRIAGE/AGE excluded]
+    FE --> HPO[Optuna on CV PR-AUC<br/>LogReg, RF, LightGBM, XGBoost, CatBoost]
+    HPO --> CAL[calibration on its own split<br/>none / Platt / isotonic]
+    CAL --> THR[cost-optimal cutoff on validation]
+    THR --> EVAL[test metrics + bootstrap CIs<br/>decision, fairness, SHAP, errors]
   end
-  subgraph Registry[MLflow]
-    EVAL --> STG["credit-default@staging"]
-    STG --> GATE{quality gate<br/>vs @production<br/>same holdout}
-    GATE -->|pass| PROD["credit-default@production"]
-    GATE -->|reject| FAIL[job fails, nothing published]
+  subgraph Gov[Governance]
+    EVAL --> STG["@staging"]
+    STG --> GATE{promotion policy<br/>12 checks vs @production}
+    GATE -->|pass| PROD["@production<br/>(+ @previous-production)"]
+    GATE -->|fail| REJ[rejected: report kept,<br/>champion unchanged]
+    GATE --> HIST[(history.json)]
+    PROD -. rollback .-> PROD
   end
   subgraph Serve
-    PROD --> API[FastAPI: /predict /predict_batch /explain /health]
-    BUNDLE[models/bundled<br/>CI-trained fallback] --> API
-    API --> LOG[(prediction log, SQLite)]
+    PROD --> BUNDLE[models/bundled]
+    BUNDLE --> API[FastAPI: /predict /predict_batch /explain<br/>/health /ready /model]
+    API --> LOG[(prediction log)]
   end
   subgraph Monitor
-    LOG --> DRIFT[Evidently drift reports]
-    SIM[simulated control and drifted slices] --> DRIFT
-    DRIFT --> CHK{check_drift<br/>share > 0.30?}
-    CHK -->|yes| RT[retrain.yml calls train.yml]
+    LOG --> CHK{monitoring policy<br/>PSI, KS, chi-square,<br/>data quality, labelled perf.}
+    SCEN[7 simulated batches] --> CHK
+    CHK -->|retrain| Train
+    CHK -->|block| FEED[fix the feed]
   end
-  PROD -. publish .-> BUNDLE
-  API --> RENDER[Render free web service]
-  API --> GHCR[GHCR image]
-  DRIFT --> PAGES[GitHub Pages]
+  API --> RENDER[Render]
+  EVAL --> PAGES[GitHub Pages dashboard]
+  CHK --> PAGES
+  HIST --> PAGES
 ```
+
+Design notes and the reasoning behind each choice are in [`docs/`](docs/):
+[architecture](docs/architecture.md) · [data](docs/data.md) · [modelling](docs/modelling.md) ·
+[decision engine](docs/decision_engine.md) · [governance](docs/governance.md) ·
+[monitoring](docs/monitoring.md) · [fairness](docs/fairness.md) · [API](docs/api.md) ·
+[performance](docs/performance.md) · [interview notes](docs/interview_notes.md).
 
 ## How each part works
 
 | Stage | Implementation |
 |---|---|
-| Ingest | `credit_default.data.download`: UCI archive zip first, then two pinned (commit-SHA) GitHub LFS mirrors (the original `.xls` and Kaggle's CSV re-export). Every source is normalised to one canonical CSV whose sha256 is pinned in `configs/data/uci.yaml` (both mirrors were checked to produce identical bytes; the UCI zip must match the same hash). Per-file checksums of the mirror downloads are verified too. |
-| Versioning | `dvc.yaml` stage `download`; `dvc.lock` pins the data version. `make data` pulls from the DVC remote, or re-downloads and verifies, then pushes. |
-| Validation | Pandera schema in `credit_default.validation`: column set (strict), dtypes, value domains (incl. the undocumented EDUCATION 0/5/6 and MARRIAGE 0 codes that exist in the real data), ranges, unique IDs, no nulls, default rate within bounds, minimum rows. Any violation raises and stops the pipeline before training. |
-| Features | One `FeatureBuilder` step inside the model pipeline (utilisation, payment ratios, delay counts), so training and serving share code. |
-| Models | Logistic regression, LightGBM, XGBoost. Optuna TPE (seeded) maximises stratified 3-fold CV PR-AUC on the training split; defaults are enqueued as trial 0. |
-| Imbalance | `class_weight="balanced"` / `scale_pos_weight` vs **SMOTE inside the imblearn pipeline**, so oversampling only ever touches the training fold. Ablation table: none vs class weights vs SMOTE, per model family. |
-| Calibration | Isotonic regression on a separate calibration split (`FrozenEstimator`), because class weights and SMOTE distort probabilities and the cost threshold needs real probabilities. Brier score before and after is reported. |
-| Splits | Stratified, seeded: 60% train, 10% calibration, 10% validation (threshold and model selection), 20% test (reported metrics and the quality gate). |
-| Selection | Champion = lowest expected cost on validation (PR-AUC breaks ties). |
-| Tracking | MLflow: parent run plus one nested run per model family; params, metrics, figures, config and the model. |
-| Registry | The deployable `ModelBundle` (calibrated pipeline + threshold + SHAP background + metadata) is logged as a pyfunc model and registered as `credit-default`. |
-| Quality gate | `python -m credit_default.registry.gate`: re-scores the `@staging` challenger and the `@production` model on the same test holdout, each at its own threshold. Exit 1 if challenger PR-AUC < production − 0.005 or cost > production × 1.01. `tests/test_gate.py` proves a model trained on permuted labels is rejected. |
-| Explainability | SHAP TreeExplainer (trees) or LinearExplainer (LogReg): global bar and beeswarm plots per run; top-k per-request contributions from `/explain` (log-odds of the base model before calibration; isotonic is monotone, so the direction of each contribution carries over). |
-| Serving | FastAPI + Pydantic. Loads `models:/credit-default@production`; if no registry is reachable (5 s timeout, no retries) it falls back to `models/bundled/model.joblib`. Every prediction is appended to a SQLite log. |
-| Monitoring | Evidently `DataDriftPreset` HTML reports for a control and a drifted slice (plus prediction drift); `check_drift` exits 1 above a 30% drifted-column share. |
-| Orchestration | Prefect flow `flows/training_flow.py`: ingest → validate → train → evaluate (gate) → register (promote). Runs offline with Prefect's temporary local server. |
-
-### MLflow aliases instead of stages
-
-MLflow deprecated registry stages; this project uses aliases with the same meaning:
-
-| Old stage | Alias | Set by |
-|---|---|---|
-| Staging | `@staging` | every training run (the challenger) |
-| Production | `@production` | the quality gate, only when the challenger passes |
-
-The API resolves `models:/credit-default@production`, so promotion and rollback are alias moves:
-no redeploy of the service is needed when it is connected to a registry.
-
-### Drift simulation (documented)
-
-The UCI table has no timestamps, so "production traffic" is simulated from the test split
-(`credit_default.monitor.simulate`, parameters in `configs/monitor/default.yaml`):
-
-- **reference**: the training split;
-- **control**: an untouched random sample of the test split, expected to show no drift;
-- **drifted**: another test-split sample with deliberate population shifts: credit limits × 0.7,
-  ages − 6 years (clipped to 21-79), PAY_0 one month worse for 35% of rows, bill amounts × 1.25.
-
-Labels are dropped from both slices because production traffic arrives without outcomes. The
-reports are published to GitHub Pages. `retrain.yml` checks the **control** slice on its weekly
-schedule (expected: no drift, no retrain) and lets you pick the **drifted** slice on manual
-dispatch to exercise the retrain path end to end. Retraining here re-runs training on the same
-labelled data; in a real system it would include newly labelled outcomes. The same check works
-on the API's prediction log: `python -m credit_default.monitor.check_drift --slice=log`.
-
-## Design trade-offs
-
-- **UCI dataset over Home Credit.** Home Credit is 2.7 GB and needs Kaggle credentials; UCI is
-  2.9 MB, so CI, the load test and Render stay fast and need no secrets.
-- **PR-AUC as the tuning objective, cost for selection.** PR-AUC is threshold-free and sensitive
-  to the minority class; the decision itself is optimised on cost afterwards.
-- **Separate calibration split instead of `CalibratedClassifierCV(cv=5)`.** One base model keeps
-  SHAP explanations exact for the served model; the price is 10% fewer training rows.
-- **Class weights by default, SMOTE as an ablation.** SMOTE adds synthetic neighbours in a space
-  with discrete payment-status codes; the ablation reports whether it helps rather than
-  assuming it.
-- **The git repository is the durable record of production.** CI runners start with an empty
-  MLflow store, so `train.yml` re-registers the committed bundle as `@production`
-  (`registry.bootstrap`), gates the challenger against it, and commits the new bundle only when
-  it passes. A persistent MLflow server (docker-compose) gives the same flow with history.
-- **Render serves the committed, CI-trained artifact.** There is no public MLflow server, so the
-  service runs with `MODEL_SOURCE=local`. If no model has been committed yet, the Render build
-  (`scripts/render_build.sh`) trains a quick fallback on the real data (no tuning, no gate);
-  once `train.yml` commits a gate-approved model, Render auto-deploys it.
-- **DVC remote: local, persisted with `actions/cache`.** GitHub release assets cannot back a
-  DVC remote: DVC stores content-addressed paths (`files/md5/ab/cdef...`), and release asset
-  names cannot contain directories, and assets are not writable through DVC. Because the
-  download is checksum-pinned and reproducible, a local remote (`.dvcstore/`, cached between
-  workflow runs keyed on `dvc.lock`) is enough; swapping in S3/GCS is one `dvc remote add`.
-- **SQLite prediction log.** Zero setup and fine for one instance; on Render's free tier the
-  disk is ephemeral, so the log lives only as long as the instance. docker-compose mounts it on
-  a volume.
-- **Synthetic fixture for tests.** Tests and CI smoke runs never touch the network. The fixture
-  has the exact UCI schema and real signal, but its metrics mean nothing and the publish step,
-  the README updater and the run report all refuse or flag synthetic runs.
+| Ingest | `credit_default.data.download`: UCI zip, then two commit-pinned mirrors; one canonical CSV whose sha256 is pinned in `configs/data/uci.yaml`; DVC (`dvc.yaml`, `dvc.lock`). |
+| Validation | Pandera contract (`credit_default.validation`): strict columns, types, domains incl. the undocumented codes, ranges, unique IDs, default-rate bounds. A violation stops the pipeline. |
+| Data quality | `credit_default.data.quality` → `results/data_quality.md`: duplicates, undocumented codes, outliers, domain flags, distributions, and leakage checks (disjoint splits, row-wise features, univariate ROC-AUC screen, train/test feature-vector overlap: 11 of 6,000 test rows). |
+| Split | Stratified, seeded 60 / 10 / 10 / 20 (train / calibration / validation / test). The data has no application date (every row covers April-September 2005), so a temporal split is impossible; metrics measure in-period generalisation ([docs/data.md](docs/data.md)). |
+| Features | Row-wise `FeatureBuilder` inside the model pipeline (utilisation, payment ratios, delay counts). SEX, MARRIAGE and AGE are excluded from model inputs (`features.exclude`); the API still accepts them and the fairness report uses them. |
+| Models | LogReg, random forest, LightGBM, XGBoost (deployable) and CatBoost (compared, not deployable). Optuna TPE on stratified 3-fold CV PR-AUC, 30 trials each; imbalance ablation (none / class weights / SMOTE inside the folds). |
+| Calibration | Per family: none, Platt and isotonic fitted on the calibration split; the lowest validation Brier wins. Platt won for every tree family; isotonic's ties cost 0.026 PR-AUC on the champion. |
+| Selection | Champion = lowest expected cost on validation among deployable families (PR-AUC breaks ties). ROC-AUC is never used to choose. Paired bootstrap differences are published. |
+| Decision engine | `credit_default.decision.engine`: configurable FN/FP costs, fixed cutoff or minimum approval rate; threshold rules compared on test; sensitivity of the optimal cutoff to FN:FP from 1:1 to 20:1 with the regret of the deployed cutoff. |
+| Explainability | SHAP (TreeExplainer / LinearExplainer) global, dependence and waterfall plots; per-request ranked contributions with direction and the raw-score → probability path; SHAP vs native vs permutation importance (Spearman 0.97 between SHAP and LightGBM gain). |
+| Fairness | `credit_default.fairness`: decline rate, precision, recall, FPR, FNR and calibration gap by SEX, EDUCATION, MARRIAGE and age band with bootstrap CIs, plus the same model trained with the excluded attributes. |
+| Governance | `credit_default.registry.policy` + `governance`: 12 checks (performance floors and vs champion, ECE, Brier, cost, API contract, valid/deterministic output, latency, size); append-only history; rollback in the registry or of the served bundle (git). |
+| Monitoring | `credit_default.monitor.scenarios` + `check_drift`: PSI / KS / chi-square / proportion tests, data-quality checks and labelled performance; the policy decides none / monitor / retrain / block. Evidently reports are still produced for people to read. |
+| Serving | FastAPI with request IDs, JSON logs, readiness, size and rate limits, CORS for the dashboard, cutoff/cost query parameters, and a NumPy fast path enabled only when bit-identical to the pipeline. |
+| Orchestration | Prefect flow (`flows/training_flow.py`) and the GitHub workflows below. |
 
 ## Quickstart
 
 ```bash
 python -m venv .venv && source .venv/bin/activate
-make install                 # pip install -e ".[dev]"
-make lint test               # ruff + pytest on the synthetic fixture (no network)
+make install                 # pip install -e ".[dev]"; add ".[research]" for CatBoost
+cp .env.example .env         # optional: every setting has a safe default
+make lint test               # ruff + 103 pytest tests on the synthetic fixture (no network)
 
 # Offline end-to-end on the synthetic fixture
-make train-synthetic         # train, log to ./mlruns (SQLite), register @staging
-make gate-synthetic          # gate vs @production, promote on pass
-make flow-synthetic          # the same as a Prefect flow
-make drift-synthetic         # Evidently reports in ./reports
+make train-synthetic gate-synthetic flow-synthetic drift-synthetic
 
-# Real data (needs network access to UCI or GitHub)
-make data                    # DVC pull, else download + verify + validate
-make train gate              # full Optuna search, then the gate
-make drift check-drift
+# Real data (network access to UCI or GitHub)
+make data quality            # DVC pull or download + verify + Pandera; data-quality report
+make train gate              # full search, then the promotion gate
+make scenarios governance-demo benchmark   # drift scenarios, governance simulation, benchmark
+python -m credit_default.decision.engine --fn-cost=8 --fp-cost=1   # another cost policy
 
-# Serve
+# Serve and try
 make serve                   # http://localhost:8000/docs
 make smoke                   # curl every endpoint
-make loadtest                # 60 s Locust run -> artifacts/loadtest.md
-
-# Full local stack: MLflow :5000, API :8000, report server :8080
-docker compose up -d --build
-docker compose --profile train run --rm trainer   # real data: download + Prefect flow into the compose MLflow
-docker compose --profile train run --rm trainer python flows/training_flow.py data=synthetic train=fast  # offline
+python scripts/build_site.py && python scripts/check_site.py   # dashboard + browser checks
 ```
 
 ### API
 
 ```bash
-curl -s localhost:8000/health
-curl -s -X POST localhost:8000/predict -H 'content-type: application/json' -d '{
-  "LIMIT_BAL": 50000, "SEX": 2, "EDUCATION": 2, "MARRIAGE": 1, "AGE": 35,
-  "PAY_0": 2, "PAY_2": 2, "PAY_3": 0, "PAY_4": 0, "PAY_5": 0, "PAY_6": 0,
-  "BILL_AMT1": 46990, "BILL_AMT2": 48233, "BILL_AMT3": 49291, "BILL_AMT4": 28314,
-  "BILL_AMT5": 28959, "BILL_AMT6": 29547, "PAY_AMT1": 2000, "PAY_AMT2": 2019,
-  "PAY_AMT3": 1200, "PAY_AMT4": 1100, "PAY_AMT5": 1069, "PAY_AMT6": 1000}'
-# -> probability_of_default, default_prediction, decision (approve/decline), threshold, model_version
-curl -s -X POST 'localhost:8000/explain?top_k=5' -H 'content-type: application/json' -d @payload.json
+curl -s localhost:8000/ready
+curl -s -X POST 'localhost:8000/predict?fn_cost=8&fp_cost=1' -H 'content-type: application/json' \
+  -H 'x-request-id: demo-1' -d @payload.json
+# -> probability_of_default, decision, threshold (+ threshold_source, policy_threshold),
+#    model_version, request_id
+curl -s -X POST 'localhost:8000/explain?top_k=8' -H 'content-type: application/json' -d @payload.json
 ```
 
 | Endpoint | Purpose |
 |---|---|
-| `GET /health` | 200 with model source/version/threshold, 503 if no model is loaded |
-| `POST /predict` | one application → calibrated probability and decision |
-| `POST /predict_batch` | `{"applications": [...]}`, up to 1,000 |
-| `POST /explain?top_k=5` | probability plus the top-k SHAP contributions |
-| `GET /model` | metadata of the served model (commit, data checksum, test metrics) |
+| `GET /health` | liveness and model summary; 503 without a model |
+| `GET /ready` | model loaded, fast path verified, SHAP explainer warmed up |
+| `GET /model` | served version, calibration, excluded inputs, data checksum, test metrics |
+| `POST /predict` | one application → calibrated probability and approve/decline |
+| `POST /predict_batch` | up to 1,000 applications |
+| `POST /explain?top_k=` | probability, decision and ranked SHAP contributions with the raw score |
 
-Invalid payloads (unknown fields, out-of-domain codes, missing fields) return 422.
+Optional on the three POST endpoints: `?threshold=` or `?fn_cost=&fp_cost=` (Bayes cutoff).
+Errors return JSON with the request ID: 422 (validation, FastAPI's usual body), 413 (body over
+2 MB), 429 (over 120 requests per minute per client, with `Retry-After`), 503 (no model). Details:
+[docs/api.md](docs/api.md).
 
 ## CI/CD
 
 | Workflow | Trigger | What it does |
 |---|---|---|
-| `ci.yml` | push, PR | ruff, pytest, synthetic end-to-end smoke (train, gate, drift, Prefect flow), Docker build, container smoke test with curl, a short Locust run, push to GHCR on `main` (`GITHUB_TOKEN`) |
-| `train.yml` | dispatch, called by `retrain.yml`, push to training code/config | real data via DVC/download → bootstrap `@production` from the committed bundle → Optuna training → quality gate (job fails on reject) → publish `results/`, `models/bundled/`, README table → build the image and run the recorded Locust load test → commit |
-| `retrain.yml` | weekly schedule, dispatch | `check_drift` on a simulated slice; calls `train.yml` if the drift share exceeds the threshold |
-| `pages.yml` | after `train`/`retrain`, push to `results/`, dispatch | real-data Evidently reports, results, MLflow summary, Playwright screenshots of the MLflow UI → `gh-pages` branch via `peaceiris/actions-gh-pages@v4` |
+| `ci.yml` | push, PR | ruff, pytest, synthetic end-to-end smoke (data quality, train, gate, drift, scenarios, governance simulation, Prefect flow), Docker build, container smoke test, short Locust run, push to GHCR |
+| `train.yml` | dispatch, called by `retrain.yml`, push to training code/config | real data → data-quality report → train five families → promotion gate → record the decision → publish (pass: results, bundle, README table, load test; fail: challenger report in `results/challenger/`) → drift scenarios and governance simulation → commit |
+| `retrain.yml` | weekly, dispatch | `check_drift` with the monitoring policy on a simulated batch; calls `train.yml` only on `retrain`; a broken feed is blocked instead |
+| `benchmark.yml` | after `train`, dispatch | serving benchmark on a GitHub-hosted runner → `results/benchmarks/` |
+| `pages.yml` | after `train`/`retrain`, push to results or site code | Evidently reports, MLflow screenshots, dashboard build, browser checks (blocks the deploy), publish to `gh-pages` |
+| `live-smoke.yml` | weekly, dispatch | wakes the Render service and smoke-tests every endpoint |
 
-## Screenshots
+## Limitations
 
-Captured by `pages.yml` with Playwright from the MLflow store of the latest `train` run
-(placeholders until that has run):
-
-- MLflow experiment runs: https://srini2k03.github.io/credit-default-mlops/screenshots/mlflow-runs.png
-- MLflow registry with `@staging` / `@production` aliases: https://srini2k03.github.io/credit-default-mlops/screenshots/mlflow-registry.png
-- Evidently drift report (drifted slice): https://srini2k03.github.io/credit-default-mlops/reports/drift_drifted.html
-- Cost-vs-threshold curve, reliability plot and SHAP plots: [`results/figures/`](results/figures/) (written by `train.yml`)
+- **Simulated monitoring.** The data has no timestamps or live traffic; drift batches are
+  simulated from the test split and the retraining path re-trains on the same labelled data.
+- **One period, one population.** Train and test come from the same April-September 2005 window
+  of one Taiwanese bank; the metrics say nothing about later cohorts or other markets.
+- **Assumed costs.** FN:FP = 5:1 is an argued assumption, not measured economics; the sensitivity
+  table shows how the cutoff and cost change if it is wrong.
+- **Model differences are small.** Tree families overlap within their bootstrap CIs; the champion
+  is the best on validation cost, not a clear winner.
+- **Fairness is descriptive.** Group metrics with CIs, not a compliance assessment; proxies for
+  the excluded attributes remain.
+- **Free hosting.** Render's free tier sleeps and has 512 MB RAM; the benchmark runs on a CI
+  runner, not on Render. The prediction log on Render is ephemeral.
+- **Registry durability.** CI's MLflow store is per run; the git history of `models/bundled/`
+  and `results/governance/history.json` are the durable record.
 
 ## Repository layout
 
 ```
-configs/                 Hydra configs: data, train, cost, monitor, registry, model search spaces
+configs/                 Hydra configs: data, train, cost, monitor (policy), registry (gate), models
 src/credit_default/
-  data/                  UCI download + checksums, synthetic fixture, schema, splits
+  data/                  download + checksums, synthetic fixture, schema, splits, quality report
   validation/            Pandera contract
-  features/              feature engineering (inside the model pipeline)
-  models/                pipeline factory, ModelBundle (deployable unit)
+  features/              row-wise feature engineering (inside the model pipeline)
+  models/                pipeline factory (5 families), ModelBundle
   tuning/                Optuna search, imbalance ablation
-  threshold/             cost curve and threshold rules
-  evaluate/              metrics and plots
+  evaluate/              metric suite, bootstrap CIs, curves, importance and error analysis
+  decision/              cost-sensitive decision engine
+  fairness/              group-level fairness report
   explain/               SHAP global plots
-  registry/              MLflow helpers, quality gate, bootstrap
-  serve/                 FastAPI app, schemas, model loader, prediction log
-  monitor/               slice simulation, Evidently reports, check_drift
+  registry/              MLflow helpers, promotion policy, gate, governance (history, rollback, demo)
+  monitor/               drift statistics, scenarios + policy, Evidently reports, check_drift
+  serve/                 FastAPI app, schemas, loader, fast exact scorer, prediction log
+  perf/                  serving benchmark
   pipeline/              train CLI, publish, run report
 flows/                   Prefect flow
-locust/                  load test and summary script
-docker/                  API/train Dockerfile, MLflow Dockerfile, report server page
-scripts/                 smoke test, Render build, site builder, screenshots, README updater
-tests/                   pytest suite (synthetic fixture, no network)
-results/                 committed outputs of train.yml (real data only)
-models/bundled/          committed CI-trained model (fallback for serving)
-dvc.yaml, dvc.lock       data versioning
-docker-compose.yml       mlflow + api + reports (+ trainer profile)
-render.yaml              Render blueprint (free web service)
+scripts/                 site builder + browser checks, MLflow screenshots, smoke test, README updater
+web/                     dashboard assets (portfolio design kit, charts, page scripts)
+docs/                    design notes and screenshots
+tests/                   103 pytest tests (synthetic fixture, no network)
+results/                 committed outputs of the CI runs (real data only)
+models/bundled/          the served model (committed by train.yml after a passing gate)
 ```
 
 ## Dataset and licence
