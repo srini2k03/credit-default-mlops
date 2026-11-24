@@ -162,7 +162,7 @@ Design notes and the reasoning behind each choice are in [`docs/`](docs/):
 python -m venv .venv && source .venv/bin/activate
 make install                 # pip install -e ".[dev]"; add ".[research]" for CatBoost
 cp .env.example .env         # optional: every setting has a safe default
-make lint test               # ruff + 103 pytest tests on the synthetic fixture (no network)
+make lint test               # ruff + 107 pytest tests on the synthetic fixture (no network)
 
 # Offline end-to-end on the synthetic fixture
 make train-synthetic gate-synthetic flow-synthetic drift-synthetic
@@ -255,7 +255,7 @@ flows/                   Prefect flow
 scripts/                 site builder + browser checks, MLflow screenshots, smoke test, README updater
 web/                     dashboard assets (portfolio design kit, charts, page scripts)
 docs/                    design notes and screenshots
-tests/                   103 pytest tests (synthetic fixture, no network)
+tests/                   107 pytest tests (synthetic fixture, no network)
 results/                 committed outputs of the CI runs (real data only)
 models/bundled/          the served model (committed by train.yml after a passing gate)
 ```
