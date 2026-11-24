@@ -20,3 +20,11 @@ services:
         value: /tmp/predictions.sqlite   # free-tier disk is ephemeral
       - key: MLFLOW_DISABLE_TELEMETRY
         value: "true"
+      - key: RATE_LIMIT_PER_MINUTE
+        value: "120"            # per client IP (X-Forwarded-For); 429 above it
+      - key: MAX_BODY_BYTES
+        value: "2000000"
+      - key: CORS_ORIGINS
+        value: https://srini2k03.github.io   # the dashboard's prediction page
+      - key: LOG_FORMAT
+        value: json

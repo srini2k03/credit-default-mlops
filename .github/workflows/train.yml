@@ -121,7 +121,8 @@ jobs:
       - name: Load test (Locust headless, 20 users, 60 s) -> results/loadtest.md
         if: steps.gate.outputs.rc == '0'
         run: |
-          docker run -d --name api -p 8000:8000 credit-default-api:train
+          # The load test measures serving capacity, so the per-client rate limit is off.
+          docker run -d --name api -p 8000:8000 -e RATE_LIMIT_PER_MINUTE=0 credit-default-api:train
           for i in $(seq 1 30); do curl -fsS localhost:8000/health && break; sleep 2; done
           bash scripts/smoke_api.sh http://localhost:8000
           locust -f locust/locustfile.py --headless -u 20 -r 5 -t 60s --host http://localhost:8000 \

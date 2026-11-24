@@ -90,7 +90,7 @@ jobs:
         run: |
           chmod -R a+r /tmp/smoke-bundle
           docker run -d --name api -p 8000:8000 -v /tmp/smoke-bundle:/bundle:ro \
-            -e MODEL_BUNDLE_PATH=/bundle/model.joblib credit-default-api:ci
+            -e MODEL_BUNDLE_PATH=/bundle/model.joblib -e RATE_LIMIT_PER_MINUTE=0 credit-default-api:ci
           for i in $(seq 1 30); do curl -fsS localhost:8000/health && break; sleep 2; done
           bash scripts/smoke_api.sh http://localhost:8000
       - name: Short Locust run (not committed; the recorded load test runs in train.yml)

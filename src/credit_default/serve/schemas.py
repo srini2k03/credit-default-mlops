@@ -129,12 +129,19 @@ class BatchRequest(BaseModel):
 
 class Prediction(BaseModel):
     request_id: str
-    probability_of_default: float = Field(description="Isotonic-calibrated P(default next month)")
+    probability_of_default: float = Field(description="Calibrated P(default next month)")
     default_prediction: bool
     decision: Literal["approve", "decline"]
-    threshold: float = Field(description="Cost-optimal threshold chosen on validation data")
+    threshold: float = Field(description="Cutoff used for this decision (decline if p >= cutoff)")
     model_version: str
     model_source: Literal["registry", "local"]
+    threshold_source: Literal["policy", "request threshold", "request costs"] = Field(
+        "policy",
+        description="policy = the model's cost-optimal cutoff chosen on validation data; "
+        "request threshold = the ?threshold= parameter; request costs = the Bayes cutoff "
+        "fp_cost / (fp_cost + fn_cost) for the ?fn_cost= / ?fp_cost= parameters",
+    )
+    policy_threshold: float | None = Field(None, description="The model's own cutoff")
 
 
 class BatchResponse(BaseModel):
@@ -146,6 +153,7 @@ class Contribution(BaseModel):
     feature: str
     value: float
     shap_value: float
+    direction: Literal["increases risk", "decreases risk"] | None = None
 
 
 class Explanation(BaseModel):
@@ -154,10 +162,20 @@ class Explanation(BaseModel):
     default_prediction: bool
     base_value: float
     contributions: list[Contribution]
-    explanation_space: str = (
-        "SHAP values in the base model's log-odds (before isotonic calibration)"
-    )
+    explanation_space: str = "SHAP values in the base model's log-odds (before calibration)"
     model_version: str
+    decision: Literal["approve", "decline"] | None = None
+    threshold: float | None = None
+    raw_score: float | None = Field(
+        None, description="base_value + all SHAP contributions = the base model's raw score"
+    )
+    uncalibrated_probability: float | None = Field(
+        None, description="Base model probability before the calibrator maps it"
+    )
+    other_features_contribution: float | None = Field(
+        None, description="Sum of the contributions not listed in the top k"
+    )
+    calibration: str | None = None
 
 
 class Health(BaseModel):
@@ -167,4 +185,12 @@ class Health(BaseModel):
     model_version: str | None = None
     model_family: str | None = None
     threshold: float | None = None
+    detail: str | None = None
+
+
+class Ready(BaseModel):
+    ready: bool
+    model_version: str | None = None
+    fast_scoring: bool = False
+    explainer_ready: bool = False
     detail: str | None = None

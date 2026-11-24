@@ -27,3 +27,6 @@ site/
 # local caches
 .prefect/
 .locust/
+
+# secrets / local settings
+.env
