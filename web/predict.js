@@ -75,7 +75,7 @@
       r.setAttribute("class", "chart-bar " + cls); svg.appendChild(r);
     }
     var y = m.t;
-    text(m.l - 8, y + rowH / 2 + 4, "base value (average applicant)", "chart-rowlabel", "end");
+    text(m.l - 8, y + rowH / 2 + 4, "base value", "chart-rowlabel", "end");
     rect(Math.min(X(0 > lo ? 0 : lo), X(start)), y + 5, Math.abs(X(start) - X(0 > lo ? 0 : lo)), "s-muted");
     text(X(start) + 6, y + rowH / 2 + 4, start.toFixed(3), "chart-val");
     segs.forEach(function (s, i) {
@@ -85,7 +85,7 @@
       text(X(Math.max(s.a, s.b)) + 6, y + rowH / 2 + 4, (s.v > 0 ? "+" : "−") + Math.abs(s.v).toFixed(3), "chart-val");
     });
     y = m.t + rowH * (segs.length + 1);
-    text(m.l - 8, y + rowH / 2 + 4, "raw score (model output)", "chart-rowlabel", "end");
+    text(m.l - 8, y + rowH / 2 + 4, "raw score", "chart-rowlabel", "end");
     var line = document.createElementNS(NS, "line");
     line.setAttribute("x1", X(res.raw_score)); line.setAttribute("x2", X(res.raw_score));
     line.setAttribute("y1", m.t); line.setAttribute("y2", y + rowH - 4); line.setAttribute("class", "chart-ref");
