@@ -1,0 +1,12 @@
+family: catboost
+# Research-only family (optional dependency, not deployable; see configs/train/default.yaml).
+params:
+  iterations: 500
+  learning_rate: 0.05
+  depth: 6
+  l2_leaf_reg: 3.0
+search_space:
+  iterations: {type: int, low: 200, high: 800}
+  learning_rate: {type: float, low: 0.01, high: 0.2, log: true}
+  depth: {type: int, low: 3, high: 8}
+  l2_leaf_reg: {type: float, low: 0.5, high: 20.0, log: true}

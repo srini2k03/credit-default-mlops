@@ -1,7 +1,12 @@
 """Model pipelines: features -> preprocessing -> (optional SMOTE) -> estimator.
 
+Families: logistic regression (baseline), random forest, LightGBM, XGBoost, and CatBoost.
+CatBoost is an optional dependency (``pip install -e ".[research]"``): it takes part in the
+model comparison but is not a deployable family, which keeps the serving image small.
+
 Imbalance strategies (compared in an ablation, chosen by config):
-- ``class_weight``: ``class_weight="balanced"`` (LogReg, LightGBM) or ``scale_pos_weight`` (XGBoost)
+- ``class_weight``: ``class_weight="balanced"`` (LogReg, LightGBM), ``"balanced_subsample"``
+  (random forest), ``scale_pos_weight`` (XGBoost) or ``auto_class_weights="Balanced"`` (CatBoost)
 - ``smote``: SMOTE inside the imblearn pipeline, so it only ever sees the training fold
 - ``none``: no correction (isotonic calibration still fixes the probability scale)
 
@@ -17,12 +22,27 @@ import numpy as np
 from imblearn.over_sampling import SMOTE
 from imblearn.pipeline import Pipeline
 from lightgbm import LGBMClassifier
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from xgboost import XGBClassifier
 
 from credit_default.features.build import FeatureBuilder, build_preprocessor
 
-FAMILIES = ("logreg", "lightgbm", "xgboost")
+FAMILIES = ("logreg", "random_forest", "lightgbm", "xgboost", "catboost")
+TREE_FAMILIES = {"random_forest", "lightgbm", "xgboost", "catboost"}
+OPTIONAL_FAMILIES = {"catboost": "catboost"}  # family -> import name
+
+
+def family_available(family: str) -> bool:
+    """True if the family's library can be imported (CatBoost is optional)."""
+    module = OPTIONAL_FAMILIES.get(family)
+    if module is None:
+        return True
+    import importlib.util
+
+    return importlib.util.find_spec(module) is not None
+
+
 STRATEGIES = ("none", "class_weight", "smote")
 
 
@@ -41,6 +61,24 @@ def build_estimator(
             random_state=seed,
             n_jobs=n_jobs,
             verbose=-1,
+            **params,
+        )
+    if family == "random_forest":
+        return RandomForestClassifier(
+            class_weight="balanced_subsample" if weighted else None,
+            random_state=seed,
+            n_jobs=n_jobs,
+            **params,
+        )
+    if family == "catboost":
+        from catboost import CatBoostClassifier
+
+        return CatBoostClassifier(
+            auto_class_weights="Balanced" if weighted else None,
+            random_seed=seed,
+            thread_count=n_jobs,
+            verbose=0,
+            allow_writing_files=False,
             **params,
         )
     if family == "xgboost":
@@ -63,12 +101,14 @@ def build_pipeline(
     pos_rate: float = 0.22,
     seed: int = 42,
     n_jobs: int = 1,
+    exclude: tuple[str, ...] | list[str] = (),
 ) -> Pipeline:
     if strategy not in STRATEGIES:
         raise ValueError(f"unknown imbalance strategy {strategy!r}; expected one of {STRATEGIES}")
+    exclude = tuple(exclude)
     steps = [
-        ("features", FeatureBuilder()),
-        ("preprocess", build_preprocessor(family)),
+        ("features", FeatureBuilder(drop=exclude)),
+        ("preprocess", build_preprocessor(family, exclude)),
     ]
     if strategy == "smote":
         steps.append(("smote", SMOTE(random_state=seed)))

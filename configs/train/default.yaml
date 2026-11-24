@@ -1,4 +1,10 @@
-models: [logreg, lightgbm, xgboost]
+# One protocol for every family: Optuna on stratified CV PR-AUC (train split) -> fit on train ->
+# calibrate on the calibration split -> threshold and selection on validation -> report on test.
+# Families that are not installed (CatBoost is optional) are skipped and reported as skipped.
+models: [logreg, random_forest, lightgbm, xgboost, catboost]
+# Only these can become the served champion. CatBoost is compared but not deployable: it would
+# add ~100 MB to the API image on a 512 MB free-tier instance for no measured gain.
+deployable: [logreg, random_forest, lightgbm, xgboost]
 imbalance: class_weight          # class_weight | smote | none
 ablation:
   enabled: true
@@ -13,6 +19,15 @@ n_jobs: 2                        # explicit threads per model; -1 oversubscribes
 cv_folds: 3
 n_trials: 30
 timeout_s: 900                   # per model family
-selection_metric: business_cost  # champion = lowest expected cost on validation
+# Champion = lowest expected cost per applicant on validation among deployable families;
+# validation PR-AUC breaks ties. ROC-AUC is reported, never used for selection.
+selection_metric: business_cost
+# Probability calibration, fitted on the calibration split only. "auto" fits every method and
+# keeps the one with the lowest validation Brier score (log loss breaks ties), so a method is
+# only used when it improves calibration on data it was not fitted on.
+calibration: auto                # auto | none | sigmoid | isotonic
+calibration_methods: [none, sigmoid, isotonic]
+n_bootstrap: 500                 # bootstrap resamples for test-set confidence intervals
+permutation_repeats: 5           # permutation importance repeats (champion, test split)
 shap_sample: 1000
 background_rows: 100

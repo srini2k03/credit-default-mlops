@@ -49,30 +49,47 @@ def engineer(df: pd.DataFrame) -> pd.DataFrame:
 
 
 class FeatureBuilder(BaseEstimator, TransformerMixin):
-    """Stateless sklearn wrapper around :func:`engineer` so it lives inside the model pipeline."""
+    """Stateless sklearn wrapper around :func:`engineer` so it lives inside the model pipeline.
+
+    ``drop`` removes raw columns from the model input after engineering. The default
+    configuration drops SEX, MARRIAGE and AGE (``configs/config.yaml`` -> ``features.exclude``):
+    the API still accepts them, and monitoring uses them for group-level fairness reports,
+    but the model never sees them.
+    """
+
+    def __init__(self, drop: tuple[str, ...] = ()):
+        self.drop = drop
 
     def fit(self, X, y=None):
         return self
 
     def transform(self, X):
-        return engineer(pd.DataFrame(X))
+        out = engineer(pd.DataFrame(X))
+        drop = [c for c in getattr(self, "drop", ()) if c in out.columns]  # old pickles: no drop
+        return out.drop(columns=drop) if drop else out
 
     def get_feature_names_out(self, input_features=None):
-        return np.array(FEATURE_COLUMNS + ENGINEERED_COLUMNS, dtype=object)
+        drop = set(getattr(self, "drop", ()))
+        return np.array(
+            [c for c in FEATURE_COLUMNS + ENGINEERED_COLUMNS if c not in drop], dtype=object
+        )
 
 
-def build_preprocessor(family: str):
+def build_preprocessor(family: str, exclude: tuple[str, ...] = ()):
     """Model-family-specific preprocessing on top of the engineered frame.
 
     Trees take the engineered frame as-is (category codes are ordinal-safe for trees);
     logistic regression gets one-hot categoricals and standardised numerics.
     """
-    if family in {"lightgbm", "xgboost"}:
+    if family in {"random_forest", "lightgbm", "xgboost", "catboost"}:
         return "passthrough"
-    numeric = [c for c in FEATURE_COLUMNS + ENGINEERED_COLUMNS if c not in CATEGORICAL]
+    categorical = [c for c in CATEGORICAL if c not in exclude]
+    numeric = [
+        c for c in FEATURE_COLUMNS + ENGINEERED_COLUMNS if c not in CATEGORICAL and c not in exclude
+    ]
     pre = ColumnTransformer(
         [
-            ("cat", OneHotEncoder(handle_unknown="ignore", sparse_output=False), CATEGORICAL),
+            ("cat", OneHotEncoder(handle_unknown="ignore", sparse_output=False), categorical),
             ("num", StandardScaler(), numeric),
         ],
         verbose_feature_names_out=False,

@@ -22,6 +22,7 @@ dependencies = [
   "shap>=0.46",
   "joblib>=1.4",
   "pyarrow>=16",
+  "scipy==1.18.1",           # drift statistics (KS, chi-square), used directly
 ]
 
 [project.optional-dependencies]
@@ -44,6 +45,9 @@ train = [
 ]
 monitor = ["evidently>=0.7,<0.8"]
 orchestrate = ["prefect>=3.0"]
+# CatBoost takes part in the model comparison (train.yml installs it) but is not deployable,
+# so the serving image does not need it.
+research = ["catboost==1.2.10"]
 dev = [
   "credit-default-mlops[api,train,monitor,orchestrate]",
   "pytest>=8",

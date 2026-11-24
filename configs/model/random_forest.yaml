@@ -1,0 +1,12 @@
+family: random_forest
+# Depth and leaf size are bounded so the serialised forest stays small enough to serve.
+params:
+  n_estimators: 300
+  max_depth: 10
+  min_samples_leaf: 20
+  max_features: 0.4
+search_space:
+  n_estimators: {type: int, low: 100, high: 400}
+  max_depth: {type: int, low: 4, high: 14}
+  min_samples_leaf: {type: int, low: 5, high: 200, log: true}
+  max_features: {type: float, low: 0.2, high: 0.8}

@@ -1,5 +1,6 @@
 # Quick run: no tuning, one model family. Used by tests, smoke runs and the Render fallback build.
 models: [lightgbm]
+deployable: [logreg, random_forest, lightgbm, xgboost]
 imbalance: class_weight
 ablation:
   enabled: false
@@ -15,5 +16,9 @@ cv_folds: 3
 n_trials: 0
 timeout_s: 120
 selection_metric: business_cost
+calibration: auto
+calibration_methods: [none, sigmoid, isotonic]
+n_bootstrap: 50
+permutation_repeats: 2
 shap_sample: 300
 background_rows: 50

@@ -23,11 +23,14 @@ BUNDLE_FILENAME = "model.joblib"
 class ModelBundle:
     family: str
     pipeline: Any  # fitted base pipeline (features -> preprocess -> model)
-    calibrator: Any  # CalibratedClassifierCV(FrozenEstimator(pipeline), "isotonic")
+    calibrator: Any  # CalibratedClassifierCV(FrozenEstimator(pipeline), method) or the pipeline
     threshold: float  # cost-optimal threshold on calibrated probabilities
     background: pd.DataFrame  # small raw sample, used by linear SHAP
     metadata: dict = field(default_factory=dict)
     feature_columns: list[str] = field(default_factory=lambda: list(FEATURE_COLUMNS))
+    # Bundles saved before calibration became configurable were all isotonic; the class-level
+    # default keeps them loadable.
+    calibration: str = "isotonic"  # none | sigmoid | isotonic
 
     # ---- prediction -------------------------------------------------------------------------
     def _frame(self, X) -> pd.DataFrame:
@@ -64,8 +67,13 @@ class ModelBundle:
                 self._explainer = shap.TreeExplainer(model)
         return self._explainer
 
+    @property
+    def explanation_space(self) -> str:
+        """Units of the SHAP values: log-odds for boosted trees and LogReg, probability for RF."""
+        return "probability" if self.family == "random_forest" else "log-odds"
+
     def shap_values(self, X) -> tuple[np.ndarray, float, pd.DataFrame]:
-        """SHAP values in the base model's log-odds space (before isotonic calibration)."""
+        """SHAP values of the base model (before calibration), see ``explanation_space``."""
         Xm = self._model_input(X)
         exp = self.explainer()
         values = exp.shap_values(Xm)
@@ -79,20 +87,30 @@ class ModelBundle:
         return values, base, Xm
 
     def explain(self, X, top_k: int = 5) -> list[dict]:
+        """Top-k contributions per row, ranked by |SHAP|, plus how the score was reached:
+        base value + sum of all contributions = the base model's raw score, which the
+        calibrator then maps to the reported probability."""
         values, base, Xm = self.shap_values(X)
         probs = self.predict_proba(X)
+        raw = self.pipeline.predict_proba(self._frame(X))[:, 1]
         results = []
         for i in range(len(Xm)):
             order = np.argsort(-np.abs(values[i]))[:top_k]
+            total = float(values[i].sum())
+            shown = float(values[i, order].sum())
             results.append(
                 {
                     "probability": float(probs[i]),
                     "base_value": base,
+                    "raw_score": base + total,
+                    "uncalibrated_probability": float(raw[i]),
+                    "other_features_contribution": total - shown,
                     "contributions": [
                         {
                             "feature": str(Xm.columns[j]),
                             "value": float(Xm.iloc[i, j]),
                             "shap_value": float(values[i, j]),
+                            "direction": "increases risk" if values[i, j] > 0 else "decreases risk",
                         }
                         for j in order
                     ],

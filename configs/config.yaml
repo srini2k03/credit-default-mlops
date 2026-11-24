@@ -7,12 +7,22 @@ defaults:
   - monitor: default
   - registry: default
   - model@models.logreg: logreg
+  - model@models.random_forest: random_forest
   - model@models.lightgbm: lightgbm
   - model@models.xgboost: xgboost
+  - model@models.catboost: catboost
   - _self_
 
 seed: 42
 target: default_payment_next_month
+
+features:
+  # Raw inputs the model must not use. SEX, marital status and age are protected attributes in
+  # many credit regulations (e.g. the US ECOA); dropping them cost no measurable CV PR-AUC on
+  # this data (docs/fairness.md). The API still accepts them (backward-compatible contract) and
+  # monitoring uses them for group-level fairness reports. Not using an attribute does not make
+  # a model fair: proxies remain, which is why group metrics are reported.
+  exclude: [SEX, MARRIAGE, AGE]
 
 paths:
   artifacts_dir: artifacts          # every run writes here (git-ignored)

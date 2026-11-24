@@ -5,3 +5,8 @@
 fn_cost: 5.0
 fp_cost: 1.0
 threshold_grid: 199          # thresholds evaluated in (0, 1)
+# Optional policy assumptions (credit_default.decision.engine.CostPolicy):
+threshold: null              # fixed cutoff instead of the cost-minimising one
+min_approval_rate: null      # e.g. 0.70 = approve at least 70% of applicants
+# FN:FP ratios for the sensitivity analysis (how the optimal cutoff moves with the ratio).
+sensitivity_ratios: [1, 1.5, 2, 3, 4, 5, 6, 8, 10, 12, 15, 20]

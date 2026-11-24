@@ -34,9 +34,9 @@ def _suggest(trial: optuna.Trial, space: dict[str, Any]) -> dict[str, Any]:
 
 
 def cv_pr_auc(
-    family, params, strategy, X, y, folds: int, seed: int, n_jobs: int = 1
+    family, params, strategy, X, y, folds: int, seed: int, n_jobs: int = 1, exclude=()
 ) -> tuple[float, float]:
-    pipe = build_pipeline(family, params, strategy, positive_rate(y), seed, n_jobs)
+    pipe = build_pipeline(family, params, strategy, positive_rate(y), seed, n_jobs, exclude)
     cv = StratifiedKFold(n_splits=folds, shuffle=True, random_state=seed)
     scores = cross_val_score(pipe, X, y, cv=cv, scoring="average_precision", n_jobs=1)
     return float(np.mean(scores)), float(np.std(scores))
@@ -53,16 +53,18 @@ def tune(
     seed: int,
     timeout_s: float | None = None,
     n_jobs: int = 1,
+    exclude=(),
 ) -> tuple[dict[str, Any], float, optuna.Study | None]:
     """Return (best params, best CV PR-AUC, study). ``n_trials=0`` scores the config defaults."""
     defaults = dict(model_cfg.params)
     if n_trials <= 0:
-        score, _ = cv_pr_auc(family, defaults, strategy, X, y, folds, seed, n_jobs)
+        score, _ = cv_pr_auc(family, defaults, strategy, X, y, folds, seed, n_jobs, exclude)
         return defaults, score, None
 
     def objective(trial):
         params = {**defaults, **_suggest(trial, dict(model_cfg.search_space))}
-        score, _ = cv_pr_auc(family, params, strategy, X, y, folds, seed, n_jobs)
+        score, std = cv_pr_auc(family, params, strategy, X, y, folds, seed, n_jobs, exclude)
+        trial.set_user_attr("cv_std", std)
         return score
 
     optuna.logging.set_verbosity(optuna.logging.WARNING)
@@ -79,14 +81,14 @@ def tune(
 
 
 def run_ablation(
-    families, params_by_family, strategies, X, y, folds: int, seed: int, n_jobs: int = 1
+    families, params_by_family, strategies, X, y, folds: int, seed: int, n_jobs: int = 1, exclude=()
 ) -> list[dict]:
     """CV PR-AUC for each (family, strategy) with the same hyper-parameters."""
     rows = []
     for family in families:
         for strategy in strategies:
             mean, std = cv_pr_auc(
-                family, params_by_family[family], strategy, X, y, folds, seed, n_jobs
+                family, params_by_family[family], strategy, X, y, folds, seed, n_jobs, exclude
             )
             rows.append(
                 {"family": family, "strategy": strategy, "cv_pr_auc": mean, "cv_pr_auc_std": std}
