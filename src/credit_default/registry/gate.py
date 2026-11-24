@@ -1,10 +1,11 @@
-"""Quality gate: the challenger must not be worse than Production on the same test holdout.
+"""Quality gate: the challenger must pass the promotion policy against Production.
 
-Both models are re-scored on the current test split, each at its own decision threshold.
-The challenger is rejected (exit code 1) if
-  PR-AUC        < production PR-AUC - pr_auc_tolerance, or
-  business cost > production cost * (1 + cost_tolerance).
-With no Production model yet, the challenger passes.
+Both models are re-scored on the current test split, each at its own decision threshold, and
+the challenger is checked against ``credit_default.registry.policy`` (performance floors and
+PR-AUC vs production, calibration (ECE, Brier vs production), expected cost vs production,
+and operational checks: API contract, valid and deterministic probabilities, latency, size).
+Any failed check rejects it (exit code 1) and production stays where it is. With no Production
+model yet, the comparative checks are skipped and the absolute ones still apply.
 
 Usage:
   python -m credit_default.registry.gate [overrides]                 # staging vs production aliases
@@ -16,6 +17,7 @@ from __future__ import annotations
 
 import logging
 import sys
+import tempfile
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
@@ -26,6 +28,7 @@ from credit_default.data.split import make_splits
 from credit_default.evaluate.metrics import evaluate_probs
 from credit_default.models.bundle import ModelBundle
 from credit_default.pipeline.steps import write_json
+from credit_default.registry import policy as promotion
 from credit_default.validation.schema import validate
 
 log = logging.getLogger(__name__)
@@ -37,6 +40,7 @@ class GateDecision:
     reasons: list[str] = field(default_factory=list)
     challenger: dict = field(default_factory=dict)
     production: dict | None = None
+    checks: list[dict] = field(default_factory=list)
 
 
 def compare(
@@ -76,20 +80,46 @@ def score(bundle: ModelBundle, X, y, cfg) -> dict:
     )
 
 
-def run_gate(cfg, challenger: ModelBundle, production: ModelBundle | None) -> GateDecision:
-    X, y = holdout(cfg)
+def _bundle_mb(bundle: ModelBundle) -> float:
+    with tempfile.TemporaryDirectory() as tmp:
+        return bundle.save(Path(tmp) / "model.joblib").stat().st_size / 1e6
+
+
+def run_gate(
+    cfg, challenger: ModelBundle, production: ModelBundle | None, data=None
+) -> GateDecision:
+    """Score both models on the same test split and apply the full promotion policy."""
+    X, y = data if data is not None else holdout(cfg)
     c = score(challenger, X, y, cfg)
     p = score(production, X, y, cfg) if production is not None else None
-    g = cfg.registry.gate
-    return compare(c, p, g.pr_auc_tolerance, g.cost_tolerance)
+    ops = promotion.operational_profile(challenger, X.head(500))
+    ops["bundle_mb"] = _bundle_mb(challenger)
+    result = promotion.evaluate(c, p, ops, cfg.registry.gate)
+    if result.passed:
+        reasons = (
+            ["no production model: challenger accepted as the first version"]
+            if p is None
+            else ["challenger passed every promotion check against production"]
+        )
+    else:
+        reasons = [ch.describe() for ch in result.failures]
+    return GateDecision(result.passed, reasons, c, p, result.as_dicts())
 
 
 def write_report(decision: GateDecision, out_dir: Path, meta: dict) -> None:
     write_json({**asdict(decision), **meta}, out_dir / "gate.json")
     rows = ["| Metric | Challenger | Production |", "|---|---|---|"]
-    for k in ("pr_auc", "roc_auc", "business_cost", "brier", "f1", "threshold"):
-        p = decision.production[k] if decision.production else None
+    for k in ("pr_auc", "roc_auc", "business_cost", "brier", "ece", "recall", "f1", "threshold"):
+        if k not in decision.challenger:
+            continue
+        p = decision.production.get(k) if decision.production else None
         rows.append(f"| {k} | {decision.challenger[k]:.4f} | {'-' if p is None else f'{p:.4f}'} |")
+    checks = ["| Check | Group | Result | Value | Limit |", "|---|---|---|---|---|"]
+    for ch in decision.checks:
+        state = "skipped" if ch["skipped"] else "pass" if ch["passed"] else "**FAIL**"
+        v = ch["value"]
+        v = f"{v:.4f}" if isinstance(v, float) else "-" if v is None else str(v)
+        checks.append(f"| {ch['name']} | {ch['group']} | {state} | {v} | {ch['limit']} |")
     text = "\n".join(
         [
             "# Quality gate",
@@ -103,6 +133,7 @@ def write_report(decision: GateDecision, out_dir: Path, meta: dict) -> None:
             "",
             *rows,
             "",
+            *(["## Promotion checks", "", *checks, ""] if decision.checks else []),
         ]
     )
     (out_dir / "gate.md").write_text(text)
@@ -171,7 +202,7 @@ def main(argv: list[str] | None = None) -> int:
         else:
             from credit_default.registry import mlflow_registry as reg
 
-            reg.set_alias(cfg, challenger_version, cfg.registry.production_alias)
+            reg.promote(cfg, challenger_version)
     return 0
 
 

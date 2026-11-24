@@ -4,6 +4,20 @@ experiment: credit-default
 model_name: credit-default
 staging_alias: staging
 production_alias: production
+previous_alias: previous-production   # set on every promotion, used by rollback
+# Promotion policy (credit_default.registry.policy). Every check must pass; a challenger that
+# fails any of them never replaces the champion. Both models are scored on the same test split.
 gate:
-  pr_auc_tolerance: 0.005      # challenger may be at most this much lower (absolute)
+  # performance
+  min_roc_auc: 0.70            # absolute floor
+  min_pr_auc: 0.45             # absolute floor (base rate is 0.22)
+  pr_auc_tolerance: 0.005      # challenger PR-AUC may be at most this much lower (absolute)
+  # calibration
+  max_ece: 0.05                # expected calibration error ceiling (15 equal-width bins)
+  brier_tolerance: 0.002       # challenger Brier may be at most this much higher (absolute)
+  # cost-sensitive
   cost_tolerance: 0.01         # challenger cost may be at most 1% higher (relative)
+  # operational
+  max_p95_latency_ms: 50       # single-row in-process predict_proba, p95 over 200 calls
+  max_bundle_mb: 50            # serialised bundle size (Render free tier: 512 MB RAM)
+history_path: results/governance/history.json

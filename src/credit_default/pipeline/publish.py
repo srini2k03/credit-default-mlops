@@ -1,12 +1,16 @@
-"""Copy a gate-approved real-data run into the committed locations.
+"""Copy a real-data run into the committed locations.
 
-  artifacts/run/{metrics.*, gate.*, figures/}  ->  results/
+Gate passed (the challenger is the new production model):
+  artifacts/run/{metrics, gate, decision, fairness}.{json,md}, evaluation.json,
+  predictions.json, figures/                   ->  results/
   artifacts/run/model.joblib                   ->  models/bundled/model.joblib (+ metadata.json)
   MLflow experiment runs                       ->  results/mlflow_summary.md
+Gate failed (``--rejected``): the challenger's report goes to results/challenger/ so the failed
+experiment stays visible, and production files are not touched.
 
 Refuses to publish a synthetic-fixture run: fixture metrics must never appear as results.
 
-Usage: python -m credit_default.pipeline.publish [overrides]
+Usage: python -m credit_default.pipeline.publish [overrides] [--rejected]
 """
 
 from __future__ import annotations
@@ -84,11 +88,36 @@ def mlflow_summary(cfg, out: Path) -> Path | None:
     return out
 
 
+RUN_FILES = (
+    "metrics.json",
+    "metrics.md",
+    "gate.json",
+    "gate.md",
+    "decision.json",
+    "decision.md",
+    "fairness.json",
+    "fairness.md",
+    "evaluation.json",
+    "predictions.json",
+)
+
+
+def _copy_run(run_dir: Path, dest: Path) -> None:
+    dest.mkdir(parents=True, exist_ok=True)
+    for name in RUN_FILES:
+        if (run_dir / name).exists():
+            shutil.copy2(run_dir / name, dest / name)
+    if (dest / "figures").exists():
+        shutil.rmtree(dest / "figures")
+    shutil.copytree(run_dir / "figures", dest / "figures")
+
+
 def publish(
     cfg,
     run_dir: Path | None = None,
     results_dir: Path | None = None,
     bundle_dir: Path | None = None,
+    rejected: bool = False,
 ) -> None:
     run_dir = run_dir or REPO_ROOT / cfg.paths.artifacts_dir / "run"
     results_dir = results_dir or REPO_ROOT / cfg.paths.results_dir
@@ -99,15 +128,21 @@ def publish(
             "refusing to publish a run that was not trained on the real UCI data"
         )
     gate = run_dir / "gate.json"
-    if not gate.exists() or not json.loads(gate.read_text())["passed"]:
-        raise RuntimeError("refusing to publish: no passing gate.json in the run directory")
+    if not gate.exists():
+        raise RuntimeError("refusing to publish: no gate.json in the run directory")
+    passed = json.loads(gate.read_text())["passed"]
+    if rejected:
+        if passed:
+            raise RuntimeError("--rejected given, but the gate passed")
+        _copy_run(run_dir, results_dir / "challenger")
+        log.info("published the rejected challenger's report to %s", results_dir / "challenger")
+        return
+    if not passed:
+        raise RuntimeError("refusing to publish: the gate did not pass (use --rejected)")
 
-    results_dir.mkdir(parents=True, exist_ok=True)
-    for name in ("metrics.json", "metrics.md", "gate.json", "gate.md"):
-        shutil.copy2(run_dir / name, results_dir / name)
-    if (results_dir / "figures").exists():
-        shutil.rmtree(results_dir / "figures")
-    shutil.copytree(run_dir / "figures", results_dir / "figures")
+    _copy_run(run_dir, results_dir)
+    if (results_dir / "challenger").exists():  # the latest challenger is now production
+        shutil.rmtree(results_dir / "challenger")
 
     bundle = ModelBundle.load(run_dir / "model.joblib")
     bundle_dir.mkdir(parents=True, exist_ok=True)
@@ -119,8 +154,8 @@ def publish(
 
 def main(argv: list[str] | None = None) -> int:
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
-    overrides, _ = split_cli(sys.argv[1:] if argv is None else argv)
-    publish(load_config(overrides))
+    overrides, flags = split_cli(sys.argv[1:] if argv is None else argv)
+    publish(load_config(overrides), rejected="--rejected" in flags)
     return 0
 
 

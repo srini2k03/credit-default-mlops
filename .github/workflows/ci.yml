@@ -38,11 +38,15 @@ jobs:
           ruff format --check .
       - name: Pytest (synthetic fixture, no network)
         run: python -m pytest
-      - name: End-to-end smoke on the synthetic fixture (train -> gate -> drift -> Prefect flow)
+      - name: End-to-end smoke on the synthetic fixture (quality -> train -> gate -> drift -> flow)
         run: |
+          make fixtures
+          python -m credit_default.data.quality data=synthetic train=fast
           make train-synthetic
           make gate-synthetic
           python -m credit_default.monitor.drift data=synthetic --bundle=artifacts/run/model.joblib
+          python -m credit_default.monitor.scenarios data=synthetic train=fast --bundle=artifacts/run/model.joblib
+          python -m credit_default.registry.governance demo data=synthetic train=fast
           make flow-synthetic
       - name: Upload smoke model for the container test
         uses: actions/upload-artifact@v4

@@ -75,6 +75,31 @@ def set_alias(cfg, version: str | int, alias: str) -> None:
     log.info("alias %s -> %s v%s", alias, cfg.registry.model_name, version)
 
 
+def promote(cfg, version: str | int) -> str | None:
+    """Point @production at ``version``; remember the old one as @previous-production."""
+    current = get_version(cfg, cfg.registry.production_alias)
+    previous = str(current.version) if current is not None else None
+    if previous is not None and previous != str(version):
+        set_alias(cfg, previous, cfg.registry.get("previous_alias", "previous-production"))
+    set_alias(cfg, version, cfg.registry.production_alias)
+    return previous
+
+
+def rollback(cfg) -> tuple[str, str]:
+    """Move @production back to @previous-production. Returns (from_version, to_version)."""
+    prev_alias = cfg.registry.get("previous_alias", "previous-production")
+    current, previous = (
+        get_version(cfg, cfg.registry.production_alias),
+        get_version(cfg, prev_alias),
+    )
+    if previous is None:
+        raise RuntimeError(f"no @{prev_alias} version to roll back to")
+    set_alias(cfg, previous.version, cfg.registry.production_alias)
+    if current is not None:
+        set_alias(cfg, current.version, prev_alias)
+    return (str(current.version) if current else "none", str(previous.version))
+
+
 def get_version(cfg, alias: str):
     """Return the ModelVersion behind an alias, or None if the alias or model does not exist."""
     try:

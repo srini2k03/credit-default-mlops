@@ -67,8 +67,10 @@ def register(cfg, version: str, decision: gate_mod.GateDecision) -> str:
         logger.warning("gate rejected v%s: %s", version, "; ".join(decision.reasons))
         return "rejected"
     reg.setup_tracking(cfg)
-    reg.set_alias(cfg, version, cfg.registry.production_alias)
-    logger.info("v%s promoted to @%s", version, cfg.registry.production_alias)
+    previous = reg.promote(cfg, version)
+    logger.info(
+        "v%s promoted to @%s (previous: v%s)", version, cfg.registry.production_alias, previous
+    )
     return "promoted"
 
 
