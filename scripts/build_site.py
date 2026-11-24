@@ -882,6 +882,7 @@ def overview_status(m, gate, history, scenarios, dq, bench, load) -> str:
             (
                 "Champion",
                 f"{esc(m['champion'])}",
+                f"version <code>local:{esc(m['git_commit'][:10])}</code> · "
                 f"{esc(m.get('calibration', 'isotonic'))} calibration · cutoff "
                 f"{t['threshold']:.3f} · ROC-AUC {t['roc_auc']:.3f} · PR-AUC {t['pr_auc']:.3f}",
                 '<a href="evaluation.html">Evaluation →</a>',
