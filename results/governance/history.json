@@ -6,7 +6,7 @@
     "source": "train workflow",
     "trigger": "manual",
     "run_url": "https://github.com/srini2k03/credit-default-mlops/actions/runs/41645854230",
-    "git_commit": "d2d766943ec531e12e393c6682ad462a8c99ff82",
+    "git_commit": "4db6a1c5f699f729d0a6f125a6333209b04fe4a5",
     "challenger": {
       "ref": "models:/credit-default@staging (v1)",
       "family": "lightgbm",
@@ -34,7 +34,7 @@
     "source": "train workflow",
     "trigger": "push",
     "run_url": "https://github.com/srini2k03/credit-default-mlops/actions/runs/45371941736",
-    "git_commit": "48a6a54a17e06fc3d9ac328effbccd87ef4e98c5",
+    "git_commit": "c7bde21e0d94ff2097ba13f292f93ec5f4ebed7e",
     "challenger": {
       "ref": "models:/credit-default@staging (v2)",
       "family": "lightgbm",

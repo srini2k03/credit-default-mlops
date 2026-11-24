@@ -1,6 +1,6 @@
 # Serving benchmark
 
-Generated 2026-11-24T10:32:52Z at commit `fbaff457e7` on GitHub-hosted ubuntu runner (4 CPUs, Python 3.12.16). Model: lightgbm (sigmoid calibration), 6,000 real test rows.
+Generated 2026-11-24T10:32:52Z at commit `f574df7f60` on GitHub-hosted ubuntu runner (4 CPUs, Python 3.12.16). Model: lightgbm (sigmoid calibration), 6,000 real test rows.
 
 Fast path returns identical probabilities on all 6,000 test rows: **True**.
 

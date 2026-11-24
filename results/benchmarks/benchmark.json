@@ -6,7 +6,7 @@
     "python": "3.12.16"
   },
   "generated_at": "2026-11-24T10:32:52Z",
-  "git_commit": "fbaff457e72d092cc2fc0ee93b3e0045875251b0",
+  "git_commit": "f574df7f6080329a15002ae96762f07c239718a1",
   "http": [
     {
       "explain": [
@@ -272,7 +272,7 @@
     }
   ],
   "model": {
-    "bundle_git_commit": "48a6a54a17e06fc3d9ac328effbccd87ef4e98c5",
+    "bundle_git_commit": "c7bde21e0d94ff2097ba13f292f93ec5f4ebed7e",
     "calibration": "sigmoid",
     "family": "lightgbm",
     "n_rows": 6000
