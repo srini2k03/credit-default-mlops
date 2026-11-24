@@ -158,6 +158,7 @@ a.browser__url:hover { color: var(--fg); }
 /* ---------- Callouts & footer ---------- */
 .sb-callout { margin-bottom: 1.25rem; }
 .sb-callout p { margin: 0; }
+.sb-footer { margin-top: 0; }
 .foot-name { color: var(--fg); font-weight: 500; margin-bottom: 0.35rem; }
 .sb-footer p { margin: 0; max-width: 40rem; }
 .sb-footer code { font-size: 0.95em; }
