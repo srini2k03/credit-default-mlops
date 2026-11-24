@@ -1,9 +1,11 @@
 name: retrain
 
-# Drift check -> retrain when the drift share exceeds the threshold (configs/monitor).
-# There is no live traffic with labels, so the checked data is a simulated slice:
-#   schedule: the control slice (expected outcome: no drift, no retrain)
-#   dispatch: choose the slice; "drifted" demonstrates the retrain path end to end.
+# Drift check -> retrain only when the monitoring policy says so (configs/monitor -> policy).
+# There is no live traffic with labels, so the checked data is a simulated batch:
+#   schedule: the control slice (expected outcome: no action, no retrain)
+#   dispatch: choose the batch; "drifted" demonstrates the retrain path end to end,
+#             "missing_values" / "new_categories" show a broken feed being blocked instead.
+# A retrain trains a challenger only: it must pass the promotion gate in train.yml.
 on:
   schedule:
     - cron: "17 5 * * 1"   # Mondays 05:17 UTC
@@ -12,7 +14,7 @@ on:
       slice:
         description: Slice to check
         type: choice
-        options: [drifted, control]
+        options: [drifted, control, missing_values, new_categories, riskier_mix]
         default: drifted
 
 permissions:
@@ -29,6 +31,7 @@ jobs:
     timeout-minutes: 30
     outputs:
       drift: ${{ steps.drift.outputs.drift }}
+      action: ${{ steps.drift.outputs.action }}
       drift_share: ${{ steps.drift.outputs.drift_share }}
       slice: ${{ steps.drift.outputs.slice }}
     steps:
@@ -46,7 +49,7 @@ jobs:
           restore-keys: dvcstore-
       - run: make data
       - id: drift
-        name: check_drift (exit 1 = drift, 2 = error)
+        name: check_drift (0 = no action, 1 = retrain, 3 = blocked feed, 2 = error)
         run: |
           SLICE="${{ inputs.slice || 'control' }}"
           echo "slice=$SLICE" >> "$GITHUB_OUTPUT"
@@ -54,16 +57,15 @@ jobs:
           python -m credit_default.monitor.check_drift --slice="$SLICE"
           rc=$?
           set -e
-          if [ "$rc" -ge 2 ]; then exit "$rc"; fi
-          python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
-          import json, glob
-          for f in glob.glob("reports/drift_*.json"):
-              s = json.load(open(f))
-              if "slice" in s:
-                  print(f"**{s['slice']}**: {s['drifted_columns']}/{s['n_columns']} columns drifted, "
-                        f"share {s['drift_share']:.2f} (threshold {s['threshold']:.2f}) -> "
-                        f"{'DRIFT, retraining' if s['drift_detected'] else 'no drift'}")
+          if [ "$rc" -eq 2 ]; then exit 2; fi
+          python - "$SLICE" <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json, sys
+          s = json.load(open(f"reports/check_{sys.argv[1]}.json"))
+          d = s["decision"]
+          print(f"**{sys.argv[1]}** -> **{d['action']}**: " + ("; ".join(d["reasons"]) or "nothing moved"))
+          print(f"\nFeature drift share {s['feature_drift_share']:.2f}, prediction PSI {s['prediction_psi']:.3f}")
           PY
+          if [ "$rc" -eq 3 ]; then echo "::warning::Batch blocked by data-quality checks; no retraining on a broken feed"; fi
       - uses: actions/upload-artifact@v4
         with:
           name: drift-report
@@ -78,5 +80,5 @@ jobs:
     uses: ./.github/workflows/train.yml
     with:
       n_trials: "30"
-      reason: "drift share ${{ needs.check-drift.outputs.drift_share }} on the ${{ needs.check-drift.outputs.slice }} slice"
+      reason: "monitoring policy: retrain on the ${{ needs.check-drift.outputs.slice }} batch (feature drift share ${{ needs.check-drift.outputs.drift_share }})"
     secrets: inherit

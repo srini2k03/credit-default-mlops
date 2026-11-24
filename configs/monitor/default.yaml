@@ -7,3 +7,18 @@ drifted_shift:
   age_shift_years: -6          # younger applicant mix (clipped to 21..79)
   pay0_worsen_fraction: 0.35   # 35% of rows get one more month of delay on PAY_0
   bill_amt_factor: 1.25        # balances up 25%
+# Monitoring policy for incoming batches (credit_default.monitor.scenarios / check_drift).
+# Significance alone never triggers an action: PSI bands are effect sizes, p-values only
+# confirm a moderate PSI. A data-quality failure blocks the batch instead of retraining on it.
+policy:
+  psi_moderate: 0.10
+  psi_major: 0.20
+  p_value: 0.01
+  feature_drift_share: 0.30      # retrain when more than 30% of input features drift
+  prediction_psi: 0.20           # retrain when the score distribution moves this much
+  max_missing_rate: 0.02         # block when any input column misses more than 2%
+  allow_unseen_categories: false # block when category codes outside the contract appear
+  min_labelled_rows: 1000        # labelled performance checks need at least this many outcomes
+  max_roc_auc_drop: 0.03         # absolute, vs the champion's test ROC-AUC (prevalence-free)
+  max_calibration_gap: 0.05      # |mean predicted - observed default rate|
+  max_cost_regret: 0.05          # deployed cutoff vs the batch's own cost-optimal cutoff

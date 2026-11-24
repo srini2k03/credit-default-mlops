@@ -32,3 +32,11 @@ def test_check_drift_exit_codes(workdir, cfg, slice_name, expected, tmp_path, mo
     monkeypatch.setenv("GITHUB_OUTPUT", str(out))
     assert check_drift.main([*overrides_for(workdir), f"--slice={slice_name}"]) == expected
     assert f"drift={'true' if expected else 'false'}" in out.read_text()
+
+
+def test_check_drift_blocks_broken_feed(workdir, cfg, trained, tmp_path, monkeypatch):
+    out = tmp_path / "gh_output"
+    monkeypatch.setenv("GITHUB_OUTPUT", str(out))
+    args = [*overrides_for(workdir), "--slice=missing_values"]
+    assert check_drift.main(args) == 3
+    assert "action=block" in out.read_text()
