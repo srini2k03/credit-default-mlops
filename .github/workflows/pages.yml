@@ -2,6 +2,7 @@ name: pages
 
 # Publishes Evidently drift reports, committed results, the MLflow run summary and MLflow UI
 # screenshots to the gh-pages branch (Settings -> Pages -> Deploy from branch: gh-pages / root).
+# The page uses the portfolio design kit in web/ (sb-kit.css/js copied unchanged, plus site.css/js).
 on:
   workflow_run:
     workflows: [train, retrain]
@@ -11,6 +12,7 @@ on:
     paths:
       - results/**
       - scripts/build_site.py
+      - web/**
       - .github/workflows/pages.yml
   workflow_dispatch:
 
