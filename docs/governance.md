@@ -39,9 +39,15 @@ comparative checks are skipped and the absolute ones still apply.
   a warning is raised, `models/bundled/` is untouched, and the rejection is appended to
   `results/governance/history.json` with the failed checks.
 
-The latest real decision (train run 45371941736): the LightGBM/Platt challenger passed all 12
-checks against the previous production model (PR-AUC 0.5594 vs 0.5362, Brier 0.1346 vs 0.1353,
-cost 0.5578 vs 0.5625, ECE 0.0146, p95 6.6 ms, 0.3 MB).
+Real decisions so far (`results/governance/history.json`):
+
+1. train run #1 (Nov 3): first version accepted (backfilled from that run's gate.json).
+2. train run 45371941736: the LightGBM/Platt challenger passed all 12 checks against it
+   (PR-AUC 0.5594 vs 0.5362, Brier 0.1346 vs 0.1353, cost 0.5578 vs 0.5625, ECE 0.0146,
+   p95 6.6 ms, 0.3 MB).
+3. retrain run 45379624037, triggered by the monitoring policy on the covariate-shift batch:
+   the retrained challenger was identical to production on every metric (the retrain re-uses
+   the same labelled data) and passed.
 
 ## Rollback
 

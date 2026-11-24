@@ -2,7 +2,10 @@
 
 Source of every number: `results/metrics.json` / `results/metrics.md` from train run
 [45371941736](https://github.com/srini2k03/credit-default-mlops/actions/runs/45371941736)
-(commit `48a6a54`), test split n = 6,000.
+(commit `48a6a54`), test split n = 6,000. The drift-triggered retrain
+[45379624037](https://github.com/srini2k03/credit-default-mlops/actions/runs/45379624037)
+(commit `1faa0a8`) reproduced every test metric exactly (same data, seeds and configuration),
+which is what the committed files now carry.
 
 ## One protocol for every family
 

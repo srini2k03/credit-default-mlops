@@ -34,16 +34,16 @@ model selection.
 
 | What | Result | Source |
 |---|---|---|
-| Champion | LightGBM, Platt (sigmoid) calibration, cutoff 0.16 | `results/metrics.json`, train run [45371941736](https://github.com/srini2k03/credit-default-mlops/actions/runs/45371941736) |
+| Champion | LightGBM, Platt (sigmoid) calibration, cutoff 0.16 | `results/metrics.json`, train run [45371941736](https://github.com/srini2k03/credit-default-mlops/actions/runs/45371941736); the drift-triggered retrain [45379624037](https://github.com/srini2k03/credit-default-mlops/actions/runs/45379624037) reproduced every metric exactly |
 | Ranking | ROC-AUC 0.781 [0.766, 0.795], PR-AUC 0.559 [0.534, 0.585] (bootstrap 95% CI) | same |
 | Calibration | Brier 0.1346, ECE 0.015 (uncalibrated: 0.1766 / 0.190) | same |
 | Decision at FN:FP = 5:1 | expected cost per applicant 0.558 vs 0.752 at the 0.5 cutoff (−25.9%); default recall 35.4% → 77.7% | `results/decision.json` |
 | Model comparison | LightGBM, random forest, XGBoost and CatBoost are within each other's CIs; logistic regression is clearly worse (PR-AUC 0.474) | `results/metrics.md` |
-| Promotion gate | new champion passed all 12 checks against the previous production model (PR-AUC 0.536 → 0.559, cost 0.5625 → 0.5578) | `results/gate.md` |
+| Promotion gate | new champion passed all 12 checks against the previous production model (PR-AUC 0.536 → 0.559, cost 0.5625 → 0.5578); every decision is in the history, incl. the retrain | `results/governance/history.json` |
 | Governance simulation | baseline and retrained candidates promoted; a 40%-label-noise candidate and an uncalibrated candidate rejected; rollback restored the previous version | `results/governance/demo.md` |
-| Drift policy | 7 simulated batches: control → no action; broken feed and new category codes → blocked; prior shift and concept drift → retrain once labels arrive | `results/monitoring/scenarios.md` |
+| Drift policy | 7 simulated batches: control → no action; broken feed and new category codes → blocked; prior shift and concept drift → retrain once labels arrive. In CI, `retrain.yml` blocked the missing-values batch (run [45379613606](https://github.com/srini2k03/credit-default-mlops/actions/runs/45379613606)) and retrained on the covariate-shift batch (run 45379624037) | `results/monitoring/scenarios.md` |
 | Serving | fast scoring path bit-identical to the sklearn pipeline on all 6,000 test rows; single-row p50 6.69 → 0.93 ms; one uvicorn worker, 4 clients: 102.6 → 330.3 req/s, p95 51.2 → 14.8 ms | `results/benchmarks/benchmark.md`, run [45375530277](https://github.com/srini2k03/credit-default-mlops/actions/runs/45375530277) |
-| Load test | Locust, 20 users, 60 s against the Docker image: 4,842 requests, 0 failures, p95 210 ms | `results/loadtest.md` |
+| Load test | Locust, 20 users, 60 s against the Docker image on the runner: 7,023 requests, 0 failures, aggregate p95 110 ms (an earlier run of the same code on another runner: 4,842 requests, p95 210 ms) | `results/loadtest.md` |
 
 Full model-comparison table (written by `train.yml`):
 

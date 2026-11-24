@@ -57,8 +57,10 @@ configured). All three give the same predictions.
 ## Load test (Locust, recorded by `train.yml`)
 
 20 users for 60 s against the Docker image on the runner, mixed traffic (predict, batch of 20,
-explain, health): 4,842 requests, 0 failures, aggregate p50 120 ms, p95 210 ms, p99 240 ms.
-Locust and the API share the runner's CPUs, and the API runs one worker, so these latencies are
-queueing under saturation; the HTTP benchmark above separates single-client latency from
-throughput. The previous release's load test reported p95 170 ms on different code and a
-different runner image; the two are not directly comparable.
+explain, health). The committed run (45379624037): 7,023 requests, 0 failures, aggregate p50
+26 ms, p95 110 ms, p99 160 ms. The previous run of the same code (45371941736) on another runner:
+4,842 requests, 0 failures, p50 120 ms, p95 210 ms. Locust and the API share the runner's CPUs
+and the API runs one worker, so these latencies are dominated by queueing and by the runner;
+the 2x spread between two runs of identical code is the reason the HTTP benchmark above (same
+runner, both paths back to back) is the basis for comparisons. The previous release's load test
+reported p95 170 ms on different code; it is not directly comparable either.
