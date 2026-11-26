@@ -215,6 +215,23 @@ Errors return JSON with the request ID: 422 (validation, FastAPI's usual body), 
 | `pages.yml` | after `train`/`retrain`, push to results or site code | Evidently reports, MLflow screenshots, dashboard build, browser checks (blocks the deploy), publish to `gh-pages` |
 | `live-smoke.yml` | weekly, dispatch | wakes the Render service and smoke-tests every endpoint |
 | `render-deploy.yml` | push to served code/model, dispatch | calls the Render deploy hook (secret `RENDER_DEPLOY_HOOK_URL`), waits until the live API reports the committed model, then smoke-tests it; a no-op until the secret is set |
+| `gcp-deploy.yml` | push to served code/model, dispatch | builds the API image, pushes it to Artifact Registry and deploys it to Google Cloud Run with keyless Workload Identity Federation, then smoke-tests the live URL; a no-op until the three `GCP_*` repository variables exist |
+
+### Google Cloud Run (optional second deployment)
+
+The same API image also deploys to Cloud Run, authenticated without stored keys: GitHub's OIDC
+token is exchanged through Workload Identity Federation for a deployer service account that can
+only push images and deploy this service, and the service runs as a separate service account with
+no roles.
+
+1. Create a Google Cloud project (the free tier covers a portfolio API with `--min-instances 0`;
+   set a budget alert in Billing to be safe).
+2. In Cloud Shell, run `bash scripts/gcp/setup_cloud_run.sh YOUR_PROJECT_ID`. It enables the
+   APIs, creates the Artifact Registry repository (keeping the 3 newest images), both service
+   accounts and the identity pool restricted to this repository, and prints three values.
+3. Add them as repository variables (`GCP_PROJECT_ID`, `GCP_WIF_PROVIDER`,
+   `GCP_SERVICE_ACCOUNT`), then run the `gcp-deploy` workflow. The job summary shows the live
+   URL; the region defaults to `asia-south1` and can be changed with a `GCP_REGION` variable.
 
 ## Limitations
 

@@ -1,0 +1,89 @@
+name: gcp-deploy
+
+# Deploys the API image to Google Cloud Run whenever the served code or model changes.
+# Auth is keyless: GitHub's OIDC token is exchanged through Workload Identity Federation, so no
+# service-account key is stored anywhere. One-time setup: run scripts/gcp/setup_cloud_run.sh in
+# Cloud Shell, then add the three repository variables it prints (Settings -> Secrets and
+# variables -> Actions -> Variables). Until they exist this workflow only prints a notice.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/credit_default/**"
+      - "models/bundled/**"
+      - "pyproject.toml"
+      - "docker/Dockerfile"
+      - ".github/workflows/gcp-deploy.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: gcp-deploy
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  PROJECT: ${{ vars.GCP_PROJECT_ID }}
+  REGION: ${{ vars.GCP_REGION || 'asia-south1' }}
+  SERVICE: credit-default-api
+  REPOSITORY: credit-default
+
+jobs:
+  deploy:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Check configuration
+        id: cfg
+        env:
+          PROVIDER: ${{ vars.GCP_WIF_PROVIDER }}
+          DEPLOYER: ${{ vars.GCP_SERVICE_ACCOUNT }}
+        run: |
+          if [ -z "$PROJECT" ] || [ -z "$PROVIDER" ] || [ -z "$DEPLOYER" ]; then
+            echo "::notice::GCP_PROJECT_ID, GCP_WIF_PROVIDER or GCP_SERVICE_ACCOUNT is not set, so nothing was deployed to Cloud Run (see scripts/gcp/setup_cloud_run.sh)."
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v4
+        if: steps.cfg.outputs.enabled == 'true'
+
+      - uses: google-github-actions/auth@v2
+        if: steps.cfg.outputs.enabled == 'true'
+        with:
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+        if: steps.cfg.outputs.enabled == 'true'
+
+      - name: Build and push the API image to Artifact Registry
+        if: steps.cfg.outputs.enabled == 'true'
+        run: |
+          IMAGE="$REGION-docker.pkg.dev/$PROJECT/$REPOSITORY/api:$GITHUB_SHA"
+          gcloud auth configure-docker "$REGION-docker.pkg.dev" --quiet
+          docker build -f docker/Dockerfile --target api -t "$IMAGE" .
+          docker push "$IMAGE"
+          echo "IMAGE=$IMAGE" >> "$GITHUB_ENV"
+
+      - name: Deploy to Cloud Run
+        if: steps.cfg.outputs.enabled == 'true'
+        run: |
+          gcloud run deploy "$SERVICE" \
+            --image "$IMAGE" --region "$REGION" --platform managed \
+            --service-account "credit-api-runtime@$PROJECT.iam.gserviceaccount.com" \
+            --allow-unauthenticated --port 8000 --cpu 1 --memory 1Gi \
+            --min-instances 0 --max-instances 2 --concurrency 20 --timeout 60 \
+            --set-env-vars "MODEL_SOURCE=local,MODEL_BUNDLE_PATH=/app/models/bundled/model.joblib,PREDICTION_LOG_PATH=/tmp/predictions.sqlite,MLFLOW_DISABLE_TELEMETRY=true,RATE_LIMIT_PER_MINUTE=120,MAX_BODY_BYTES=2000000,CORS_ORIGINS=https://srini2k03.github.io,LOG_FORMAT=json" \
+            --labels "app=credit-default,commit=${GITHUB_SHA:0:7}" \
+            --quiet
+          URL=$(gcloud run services describe "$SERVICE" --region "$REGION" --format 'value(status.url)')
+          echo "URL=$URL" >> "$GITHUB_ENV"
+          echo "Live on Cloud Run: $URL/docs" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Smoke test
+        if: steps.cfg.outputs.enabled == 'true'
+        run: bash scripts/smoke_api.sh "$URL"
