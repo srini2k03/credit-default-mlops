@@ -227,11 +227,12 @@ no roles.
 1. Create a Google Cloud project (the free tier covers a portfolio API with `--min-instances 0`;
    set a budget alert in Billing to be safe).
 2. In Cloud Shell, run `bash scripts/gcp/setup_cloud_run.sh YOUR_PROJECT_ID`. It enables the
-   APIs, creates the Artifact Registry repository (keeping the 3 newest images), both service
+   APIs, creates the Artifact Registry repository (keeping only the newest image), both service
    accounts and the identity pool restricted to this repository, and prints three values.
 3. Add them as repository variables (`GCP_PROJECT_ID`, `GCP_WIF_PROVIDER`,
    `GCP_SERVICE_ACCOUNT`), then run the `gcp-deploy` workflow. The job summary shows the live
-   URL; the region defaults to `asia-south1` and can be changed with a `GCP_REGION` variable.
+   URL; the region defaults to `us-central1` (a Tier 1 region, so the whole free tier applies) and can be
+   changed with a `GCP_REGION` variable.
 
 ## Limitations
 

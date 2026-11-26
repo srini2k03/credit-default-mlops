@@ -4,13 +4,14 @@
 # Run it in Cloud Shell (console.cloud.google.com -> the ">_" icon), after creating a project:
 #   bash setup_cloud_run.sh YOUR_PROJECT_ID
 #
-# It creates: an Artifact Registry Docker repository (keeping only the 3 newest images), a runtime
+# It creates: an Artifact Registry Docker repository (keeping only the newest image, so storage stays
+# within the free 0.5 GB), a runtime
 # service account with no roles, a deployer service account, and a Workload Identity Federation
 # pool that only this GitHub repository can use. No keys are created. It is safe to re-run.
 set -euo pipefail
 
 PROJECT_ID=${1:?usage: bash setup_cloud_run.sh PROJECT_ID}
-REGION=${REGION:-asia-south1}
+REGION=${REGION:-us-central1}  # Tier 1 region: the full free tier, and free North-America egress
 GITHUB_REPO=srini2k03/credit-default-mlops
 REPOSITORY=credit-default
 POOL=github
@@ -31,7 +32,7 @@ gcloud artifacts repositories describe "$REPOSITORY" --location="$REGION" >/dev/
     --location="$REGION" --description="credit-default API images"
 cat > /tmp/cleanup-policy.json <<'JSON'
 [
-  {"name": "keep-newest", "action": {"type": "Keep"}, "mostRecentVersions": {"keepCount": 3}},
+  {"name": "keep-newest", "action": {"type": "Keep"}, "mostRecentVersions": {"keepCount": 1}},
   {"name": "delete-older", "action": {"type": "Delete"}, "condition": {"tagState": "any", "olderThan": "1d"}}
 ]
 JSON

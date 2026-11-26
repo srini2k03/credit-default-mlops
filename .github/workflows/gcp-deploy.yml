@@ -26,7 +26,7 @@ permissions:
 
 env:
   PROJECT: ${{ vars.GCP_PROJECT_ID }}
-  REGION: ${{ vars.GCP_REGION || 'asia-south1' }}
+  REGION: ${{ vars.GCP_REGION || 'us-central1' }}
   SERVICE: credit-default-api
   REPOSITORY: credit-default
 
